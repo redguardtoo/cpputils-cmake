@@ -1,0 +1,25 @@
+* cpputils-cmake.el
+cpputils-cmake automatically enable real time syntax and intellisense if you use [[http://www.cmake.org][CMake]].
+
+You can set it up like this:
+#+BEGIN_SRC elisp
+(require 'cpputils-cmake)
+(global-set-key (kbd "C-cC-a") 'cppcm-create-or-update-flymake-files)
+#+END_SRC
+
+* Contribute
+If you need submit any fix, it would be great if you opened a pull-request. The repo is at:
+#+BEGIN_EXAMPLE
+[[https://github.com/redguardtoo/cpputils-cmake]]
+#+END_EXAMPLE
+
+* License
+Copyright (C) 2012 Chen Bin
+
+Author: Chen Bin <chenbin.sh@gmail.com> Keywords: flymake intellisense cmake
+
+This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program. If not, see [[http://www.gnu.org/licenses/]].
