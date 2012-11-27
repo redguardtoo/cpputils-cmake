@@ -1,18 +1,39 @@
 * cpputils-cmake.el
-cpputils-cmake automatically enable real time syntax and intellisense if you use [[http://www.cmake.org][CMake]].
+cpputils-cmake automatically enable real time syntax check (Flymake) and IntelliSense (auto-complete+auto-complete-clang) if you use [[http://www.cmake.org][CMake]].
+
+It does all the configuration dirty job smartly for you. But the real job is done by the external and internal Emacs plugins.
+
+To use real time C++ syntax check:
+You need enable Flymake. `M-x flymake-mode` is enough. Or you can copy one line of elisp code into your .emacs:
+#+BEGIN_SRC elisp
+(flymake-mode)
+#+END_SRC
+
+To use IntelliSense:
+You need install third party plugins "auto-complete" and "auto-complete-clang" through ELPA. See [[http://emacswiki.org/emacs/AutoComplete][EmacsWiki]] and [[https://github.com/redguardtoo/emacs.d/blob/master/init-auto-complete.el][my configuration]] for howto.
+
+To use smart compile:
+You need do nothing. Use `M-x compile` as usual.
 
 You can set it up like this:
 #+BEGIN_SRC elisp
 (require 'cpputils-cmake)
-(global-set-key (kbd "C-cC-a") 'cppcm-create-or-update-flymake-files)
+; This should be done at first
+(cppcm-create-or-update-flymake-files)
+; better IntelliSense for auto-complete-clang
+(when cppcm-include-dirs
+; cppcm-include-dirs could be nil
+  (setq ac-clang-flags cppcm-include-dirs)
+  )
+; Smart compile, avoid typing full build path for "make -C"
+(when cppcm-build-dir
+  (setq compile-command (concat "make -C " cppcm-build-dir))
+  ; fixed rinari's bug
+  (remove-hook 'find-file-hook 'rinari-launch)
+  )
 #+END_SRC
-
-* Contribute
-If you need submit any fix, it would be great if you opened a pull-request. The repo is at:
-#+BEGIN_EXAMPLE
-[[https://github.com/redguardtoo/cpputils-cmake]]
-#+END_EXAMPLE
-
+* Contact me
+You can report at [[https://github.com/redguardtoo/cpputils-cmake]]. My email is <chenbin DOT sh AT gmail>.
 * License
 Copyright (C) 2012 Chen Bin
 
