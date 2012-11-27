@@ -17,20 +17,22 @@ You need do nothing. Use `M-x compile` as usual.
 
 You can set it up like this:
 #+BEGIN_SRC elisp
-(require 'cpputils-cmake)
-; This should be done at first
-(cppcm-create-or-update-flymake-files)
-; better IntelliSense for auto-complete-clang
-(when cppcm-include-dirs
-; cppcm-include-dirs could be nil
-  (setq ac-clang-flags cppcm-include-dirs)
-  )
-; Smart compile, avoid typing full build path for "make -C"
-(when cppcm-build-dir
-  (setq compile-command (concat "make -C " cppcm-build-dir))
-  ; fixed rinari's bug
-  (remove-hook 'find-file-hook 'rinari-launch)
-  )
+(add-hook 'c-mode-common-hook (lambda ()
+  (require 'cpputils-cmake) ;unnecessary if you use elpa to install package
+  ; This should be done at first
+  (cppcm-create-or-update-flymake-files)
+  ; better IntelliSense for auto-complete-clang
+  (when cppcm-include-dirs
+  ; cppcm-include-dirs could be nil
+    (setq ac-clang-flags cppcm-include-dirs)
+    )
+  ; Smart compile, avoid typing full build path for "make -C"
+  (when cppcm-build-dir
+    (setq compile-command (concat "make -C " cppcm-build-dir))
+    ; fixed rinari's bug
+    (remove-hook 'find-file-hook 'rinari-launch)
+    )
+  ))
 #+END_SRC
 * Contact me
 You can report at [[https://github.com/redguardtoo/cpputils-cmake]]. My email is <chenbin DOT sh AT gmail>.
