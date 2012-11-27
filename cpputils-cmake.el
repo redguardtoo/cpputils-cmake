@@ -10,6 +10,21 @@
 
 ;; This file is free software (GPLv3 License)
 
+;; How to set it up:
+;; ; This should be done at first
+;; (cppcm-create-or-update-flymake-files)
+;; ; better IntelliSense for auto-complete-clang
+;; (when cppcm-include-dirs
+;;   ; cppcm-include-dirs could be nil
+;;   (setq ac-clang-flags cppcm-include-dirs)
+;;   )
+;; ; Smart compile, avoid typing full build path for "make -C"
+;; (when cppcm-build-dir
+;;   (setq compile-command (concat "make -C " cppcm-build-dir))
+;;   ; fixed rinari's bug
+;;   (remove-hook 'find-file-hook 'rinari-launch)
+;;   )
+
 ;;; Code:
 (defcustom cppcm-proj-max-dir-level 16 "maximum level of the project directory tree"
   :type 'number
