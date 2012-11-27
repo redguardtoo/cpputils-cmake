@@ -20,6 +20,7 @@
   :group 'cpputils-cmake)
 
 (defvar cppcm-build-dir nil "The full path of build directory")
+(defvar cppcm-src-dir nil "The full path of root source directory")
 (defvar cppcm-include-dirs nil "List of include directories. Each directory string has '-I' prefix")
 (defvar cppcm-cxxflags nil "CXX_FLAGS queried from CMake project files")
 
@@ -58,22 +59,21 @@
     (cppcm-query-var (concat d "CMakeCache.txt") "[[:word:]]+_SOURCE_DIR\:STATIC\=\\(.*\\)")
     )
 
-;; @return (list src-dir build-dir)
 (defun cppcm-get-dirs ()
   (let ((crt-proj-dir (file-name-as-directory (file-name-directory buffer-file-name)))
-        build-dir
-        src-dir
         (i 0)
         (is-root-dir-found nil)
         )
+    (setq cppcm-build-dir nil)
+    (setq cppcm-src-dir nil)
     (catch 'brk
            ; if current directory does not contain CMakeLists.txt, we assume the
            ; whole project does not use cmake at all
            (if (not (file-exists-p (concat crt-proj-dir "CMakeLists.txt"))) (throw 'brk nil))
 
            (while (and (< i cppcm-proj-max-dir-level) (not is-root-dir-found) )
-                  (setq build-dir (concat crt-proj-dir (file-name-as-directory cppcm-build-dirname)))
-                  (cond ((and (file-exists-p (concat build-dir "CMakeCache.txt")))
+                  (setq cppcm-build-dir (concat crt-proj-dir (file-name-as-directory cppcm-build-dirname)))
+                  (cond ((and (file-exists-p (concat cppcm-build-dir "CMakeCache.txt")))
                          (setq is-root-dir-found t)
                          )
                         (t ;default
@@ -82,9 +82,8 @@
                         )
                   (setq i (+ i 1))
                   )
-           (when build-dir
-             (setq src-dir (cppcm-get-source-dir build-dir))
-             (vector src-dir build-dir)
+           (when cppcm-build-dir
+             (setq cppcm-src-dir (cppcm-get-source-dir cppcm-build-dir))
              )
            )
   ))
@@ -192,11 +191,8 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
         bd
         )
     (clrhash cppcm-hash)
-    (setq dirs (cppcm-get-dirs))
-    (setq sd (elt dirs 0))
-    (setq bd (elt dirs 1))
-    (setq cppcm-build-dir bd)
-    (cppcm-create-flymake-makefiles sd sd bd)
+    (cppcm-get-dirs)
+    (cppcm-create-flymake-makefiles cppcm-src-dir cppcm-src-dir cppcm-build-dir)
     (cppcm-set-cxxflags-current-buffer)
     )
   )
