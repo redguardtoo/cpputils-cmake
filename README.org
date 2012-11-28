@@ -3,6 +3,9 @@ cpputils-cmake automatically enable real time syntax check (Flymake) and Intelli
 
 It does all the configuration dirty job smartly for you. But the real job is done by the external and internal Emacs plugins.
 
+* Dependency
+cpputils-cmake is NOT dependent on any other packages. It only query usful information from files created by CMake and provide some handy Elisp functons to help you get the information easily.
+
 To use real time C++ syntax check:
 You need enable Flymake. `M-x flymake-mode` is enough. Or you can copy one line of elisp code into your .emacs:
 #+BEGIN_SRC elisp
@@ -10,15 +13,22 @@ You need enable Flymake. `M-x flymake-mode` is enough. Or you can copy one line 
 #+END_SRC
 
 To use IntelliSense:
-You need install third party plugins "auto-complete" and "auto-complete-clang" through ELPA. See [[http://emacswiki.org/emacs/AutoComplete][EmacsWiki]] and [[https://github.com/redguardtoo/emacs.d/blob/master/init-auto-complete.el][my configuration]] for howto.
+You need install third party plugins `auto-complete` and `auto-complete-clang` through ELPA. See [[http://emacswiki.org/emacs/AutoComplete][EmacsWiki]] and [[https://github.com/redguardtoo/emacs.d/blob/master/init-auto-complete.el][my configuration]] for howto.
 
 To use smart compile:
 You need do nothing. Use `M-x compile` as usual.
 
-You can set it up like this:
+* Install
+cpputils-cmake is already uploaded to [[http://marmalade-repo.org/]]. So the best way to install it is using Emacs' package manager.
+
+* Set up
+Copy&paste below code into your .emacs:
 #+BEGIN_SRC elisp
 (add-hook 'c-mode-common-hook (lambda ()
-  (require 'cpputils-cmake) ;unnecessary if you use elpa to install package
+  ; Not needed if you use elpa to install package
+  (require 'cpputils-cmake)
+  ; OPTIONAL. The directory name of your build directory. By default its value is "build"
+  (setq cppcm-build-dirname "build")
   ; This should be done at first
   (cppcm-create-or-update-flymake-files)
   ; better IntelliSense for auto-complete-clang
