@@ -4,7 +4,7 @@ cpputils-cmake automatically enable real time syntax check (Flymake) and Intelli
 It does all the configuration dirty job smartly for you. But the real job is done by the external and internal Emacs plugins.
 
 * Dependency
-cpputils-cmake is NOT dependent on any other packages. It only query usful information from files created by CMake and provide some handy Elisp functons to help you get the information easily.
+cpputils-cmake is NOT dependent on any other packages. It only query useful information from files created by CMake and provide some handy Elisp functions to help you get the information easily.
 
 To use real time C++ syntax check:
 You need enable Flymake. `M-x flymake-mode` is enough. Or you can copy one line of elisp code into your .emacs:
@@ -13,7 +13,7 @@ You need enable Flymake. `M-x flymake-mode` is enough. Or you can copy one line 
 #+END_SRC
 
 To use IntelliSense:
-You need install third party plugins `auto-complete` and `auto-complete-clang` through ELPA. See [[http://emacswiki.org/emacs/AutoComplete][EmacsWiki]] and [[https://github.com/redguardtoo/emacs.d/blob/master/init-auto-complete.el][my configuration]] for howto.
+You need install third party plugins `auto-complete` and `auto-complete-clang` through [[http://marmalade-repo.org/][Emacs' package manager]]. See [[http://emacswiki.org/emacs/AutoComplete][EmacsWiki]] and [[https://github.com/redguardtoo/emacs.d/blob/master/init-auto-complete.el][my configuration]] for details.
 
 To use smart compile:
 You need do nothing. Use `M-x compile` as usual.
@@ -25,7 +25,7 @@ cpputils-cmake is already uploaded to [[http://marmalade-repo.org/]]. So the bes
 Copy&paste below code into your .emacs:
 #+BEGIN_SRC elisp
 (add-hook 'c-mode-common-hook (lambda ()
-  ; Not needed if you use elpa to install package
+  ; Below line is NOT needed if you use Marmalade (http://marmalade-repo.org/) to install package
   (require 'cpputils-cmake)
   ; OPTIONAL. The directory name of your build directory. By default its value is "build"
   (setq cppcm-build-dirname "build")
@@ -49,7 +49,7 @@ You can report at [[https://github.com/redguardtoo/cpputils-cmake]]. My email is
 * License
 Copyright (C) 2012 Chen Bin
 
-Author: Chen Bin <chenbin.sh@gmail.com> Keywords: flymake intellisense cmake
+Author: Chen Bin <chenbin.sh@gmail.com> Keywords: flymake IntelliSense cmake
 
 This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
