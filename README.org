@@ -1,7 +1,7 @@
 * cpputils-cmake.el (current version 0.0.2)
 cpputils-cmake automatically enable real time syntax check (Flymake) and IntelliSense (auto-complete+auto-complete-clang) if you use [[http://www.cmake.org][CMake]].
 
-It does all the configuration dirty job smartly for you. So you can use Flymake, auto-complete, auto-complete-clang, compile without with almost no configuration.
+It does all the configuration dirty job automatically for you. So you can use Flymake, auto-complete, auto-complete-clang, compile with almost no configuration.
 
 * Dependency
 cpputils-cmake is NOT dependent on any other packages. It only query useful information from files created by CMake and provide some handy Elisp functions to help you get the information easily.
@@ -29,7 +29,7 @@ Copy and paste below code into your .emacs:
   ))
 #+END_SRC
 * How to use it (for non-geeks)
-Forget cpputils-cmake from now on. Just enjoy Flymake, auto-complete, auto-complete-clang and compile. 
+After configuration, you can forget cpputils-cmake. Just enjoy Flymake, auto-complete, auto-complete-clang and compile. 
 * Contact me
 You can report at [[https://github.com/redguardtoo/cpputils-cmake]]. My email is <chenbin DOT sh AT gmail>.
 * License
