@@ -1,7 +1,7 @@
-* cpputils-cmake.el
+* cpputils-cmake.el (current version 0.0.2)
 cpputils-cmake automatically enable real time syntax check (Flymake) and IntelliSense (auto-complete+auto-complete-clang) if you use [[http://www.cmake.org][CMake]].
 
-It does all the configuration dirty job smartly for you. But the real job is done by the external and internal Emacs plugins.
+It does all the configuration dirty job smartly for you. So you can use Flymake, auto-complete, auto-complete-clang, compile without with almost no configuration.
 
 * Dependency
 cpputils-cmake is NOT dependent on any other packages. It only query useful information from files created by CMake and provide some handy Elisp functions to help you get the information easily.
@@ -22,28 +22,14 @@ You need do nothing. Use `M-x compile` as usual.
 cpputils-cmake is already uploaded to [[http://marmalade-repo.org/]]. So the best way to install it is using Emacs' package manager.
 
 * Set up
-Copy&paste below code into your .emacs:
+Copy and paste below code into your .emacs:
 #+BEGIN_SRC elisp
 (add-hook 'c-mode-common-hook (lambda ()
-  ; Below line is NOT needed if you use Marmalade (http://marmalade-repo.org/) to install package
-  (require 'cpputils-cmake)
-  ; OPTIONAL. The directory name of your build directory. By default its value is "build"
-  (setq cppcm-build-dirname "build")
-  ; This should be done at first
-  (cppcm-create-or-update-flymake-files)
-  ; better IntelliSense for auto-complete-clang
-  (when cppcm-include-dirs
-  ; cppcm-include-dirs could be nil
-    (setq ac-clang-flags cppcm-include-dirs)
-    )
-  ; Smart compile, avoid typing full build path for "make -C"
-  (when cppcm-build-dir
-    (setq compile-command (concat "make -C " cppcm-build-dir))
-    ; fixed rinari's bug
-    (remove-hook 'find-file-hook 'rinari-launch)
-    )
+  (cppcm-reload-all)
   ))
 #+END_SRC
+* How to use it (for non-geeks)
+Forget cpputils-cmake from now on. Just enjoy Flymake, auto-complete, auto-complete-clang and compile. 
 * Contact me
 You can report at [[https://github.com/redguardtoo/cpputils-cmake]]. My email is <chenbin DOT sh AT gmail>.
 * License
