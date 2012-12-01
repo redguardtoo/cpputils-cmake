@@ -4,26 +4,14 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake
-;; Version: 0.0.1
+;; Version: 0.0.2
 
 ;; This file is not part of GNU Emacs.
 
 ;; This file is free software (GPLv3 License)
 
 ;; How to set it up:
-;; ; This should be done at first
-;; (cppcm-create-or-update-flymake-files)
-;; ; better IntelliSense for auto-complete-clang
-;; (when cppcm-include-dirs
-;;   ; cppcm-include-dirs could be nil
-;;   (setq ac-clang-flags cppcm-include-dirs)
-;;   )
-;; ; Smart compile, avoid typing full build path for "make -C"
-;; (when cppcm-build-dir
-;;   (setq compile-command (concat "make -C " cppcm-build-dir))
-;;   ; fixed rinari's bug
-;;   (remove-hook 'find-file-hook 'rinari-launch)
-;;   )
+;; See README.org which is distributed with this file
 
 ;;; Code:
 (defcustom cppcm-proj-max-dir-level 16 "maximum level of the project directory tree"
@@ -97,10 +85,11 @@
                         )
                   (setq i (+ i 1))
                   )
-           (when cppcm-build-dir
+           (when is-root-dir-found
              (setq cppcm-src-dir (cppcm-get-source-dir cppcm-build-dir))
              )
            )
+    is-root-dir-found
   ))
 
 (defun cppcm-guess-var (var cm)
@@ -207,9 +196,23 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
         bd
         )
     (clrhash cppcm-hash)
-    (cppcm-get-dirs)
-    (cppcm-create-flymake-makefiles cppcm-src-dir cppcm-src-dir cppcm-build-dir)
-    (cppcm-set-cxxflags-current-buffer)
+    (when (cppcm-get-dirs)
+      (cppcm-create-flymake-makefiles cppcm-src-dir cppcm-src-dir cppcm-build-dir)
+      (cppcm-set-cxxflags-current-buffer)
+      )
+    )
+  )
+
+;;;###autoload
+(defun cppcm-reload-all ()
+  "re-create Makefiles for flymake and re-set all the flags"
+  (interactive)
+  (cppcm-create-or-update-flymake-files)
+  (when cppcm-include-dirs
+    (setq ac-clang-flags cppcm-include-dirs)
+    )
+  (when (and cppcm-build-dir (file-exists-p (concat cppcm-build-dir "CMakeCache.txt")))
+    (setq compile-command (concat "make -C " cppcm-build-dir))
     )
   )
 
