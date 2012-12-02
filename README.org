@@ -26,6 +26,8 @@ Copy and paste below code into your .emacs:
 #+BEGIN_SRC elisp
 (add-hook 'c-mode-common-hook (lambda ()
   (cppcm-reload-all)
+  ; fixed rinari's bug.
+  (remove-hook 'find-file-hook 'rinari-launch)
   ))
 #+END_SRC
 * How to use it (for non-geeks)
