@@ -4,7 +4,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake
-;; Version: 0.0.2
+;; Version: 0.0.3
 
 ;; This file is not part of GNU Emacs.
 
@@ -25,7 +25,6 @@
 (defvar cppcm-build-dir nil "The full path of build directory")
 (defvar cppcm-src-dir nil "The full path of root source directory")
 (defvar cppcm-include-dirs nil "List of include directories. Each directory string has '-I' prefix")
-(defvar cppcm-cxxflags nil "CXX_FLAGS queried from CMake project files")
 
 (defvar cppcm-hash (make-hash-table :test 'equal))
 (defconst cppcm-prog "cpputils-cmake")
@@ -123,15 +122,34 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
 (defun cppcm-create-one-makefile (root-src-dir build-dir cm executable mk)
   (let (flag-make
         cppflags
+        exe-dir
+        exe-full-path
         )
+    (setq exe-dir (concat
+                   (directory-file-name build-dir)
+                   (cppcm-replace-once root-src-dir (file-name-directory cm))))
     (setq flag-make
           (concat
-           (directory-file-name build-dir)
-           (cppcm-replace-once root-src-dir (file-name-directory cm))
+           exe-dir
            "CMakeFiles/"
            executable
            ".dir/flags.make"
            ))
+    ;; try to guess the executable file full path
+    (setq exe-full-path
+          (concat
+           exe-dir
+           executable
+           (if (eq system-type 'darwin) (concat ".app/Contents/MacOS/" executable))
+           )
+          )
+    (if (not (file-exists-p exe-full-path))
+        (setq exe-full-path (concat exe-dir executable))
+        )
+    (if (not (file-exists-p exe-full-path))
+        (setq exe-full-path nil)
+        )
+    (puthash (concat cm "exe-full-path") exe-full-path cppcm-hash)
     (when (file-exists-p flag-make) ;if it's the first time we use cmake
       (setq cppflags (cppcm-trim-cppflags (cppcm-query-var flag-make "\s*CXX_FLAGS\s*=\s*\\(.*\\)")))
       (puthash cm cppflags cppcm-hash)
@@ -179,11 +197,28 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
     )
   )
 
-(defun cppcm-set-cxxflags-current-buffer ()
-  (let (cm)
+;;;###autoload
+(defun cppcm-get-exe-path-current-buffer ()
+  (interactive)
+  (let (cm
+        exe-path
+        )
     (setq cm (concat (file-name-as-directory (file-name-directory buffer-file-name)) "CMakeLists.txt"))
-    (setq cppcm-cxxflags (gethash cm cppcm-hash))
-    (setq cppcm-include-dirs (if cppcm-cxxflags (split-string cppcm-cxxflags "\s+" t)))
+    (setq exe-path (gethash (concat cm "exe-full-path") cppcm-hash))
+    (kill-new exe-path)
+    (message "%s => clipboard" exe-path)
+    exe-path
+    )
+  )
+
+(defun cppcm-set-cxxflags-current-buffer ()
+  (interactive)
+  (let (cm
+        cxxflags
+        )
+    (setq cm (concat (file-name-as-directory (file-name-directory buffer-file-name)) "CMakeLists.txt"))
+    (setq cxxflags (gethash cm cppcm-hash))
+    (setq cppcm-include-dirs (if cxxflags (split-string cxxflags "\s+" t)))
     )
   )
 
