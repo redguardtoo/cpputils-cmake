@@ -32,7 +32,18 @@ Copy and paste below code into your .emacs:
 * How to use it (for non-geeks)
 After configuration, you can forget cpputils-cmake. Just enjoy Flymake, auto-complete, auto-complete-clang and compile. 
 * Handy tools
-The command `cppcm-get-exe-path-current-buffer` copy the executable full path into clipboard. It's useful when you use gud-gdb.
+The command `cppcm-get-exe-path-current-buffer` copy the executable's full path into clipboard.
+
+It return the full path at the same time.
+
+You can use it with the command `gud-gdb`:
+#+BEGIN_SRC elisp
+(global-set-key (kbd "C-c C-g")
+ '(lambda ()(interactive) (gud-gdb (concat "gdb --fullname " (cppcm-get-exe-path-current-buffer))))
+)
+#+END_SRC
+
+The purpose of above script is to avoid typing the executable's path when you start gdb.
 * Contact me
 You can report at [[https://github.com/redguardtoo/cpputils-cmake]]. My email is <chenbin DOT sh AT gmail>.
 * License
