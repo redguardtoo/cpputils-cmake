@@ -3,21 +3,6 @@ cpputils-cmake automatically enable real time syntax check (Flymake) and Intelli
 
 It does all the configuration dirty job automatically for you. So you can use Flymake, auto-complete, auto-complete-clang, compile with almost no configuration.
 
-* Dependency
-cpputils-cmake is NOT dependent on any other packages. It only query useful information from files created by CMake and provide some handy Elisp functions to help you get the information easily.
-
-To use real time C++ syntax check:
-You need enable Flymake. `M-x flymake-mode` is enough. Or you can copy one line of elisp code into your .emacs:
-#+BEGIN_SRC elisp
-(flymake-mode)
-#+END_SRC
-
-To use IntelliSense:
-You need install third party plugins `auto-complete` and `auto-complete-clang` through [[http://marmalade-repo.org/][Emacs' package manager]]. See [[http://emacswiki.org/emacs/AutoComplete][EmacsWiki]] and [[https://github.com/redguardtoo/emacs.d/blob/master/init-auto-complete.el][my configuration]] for details.
-
-To use smart compile:
-You need do nothing. Use `M-x compile` as usual.
-
 * Install
 cpputils-cmake is already uploaded to [[http://marmalade-repo.org/]]. So the best way to install it is using Emacs' package manager.
 * Set up
