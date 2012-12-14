@@ -34,12 +34,12 @@ Copy and paste below code into your .emacs:
 )
 #+END_SRC
 * One minute step by step tutorial
-1. Create a hello world C++ project running one line shell script
+** Create a hello world C++ project running one line shell script
 #+BEGIN_SRC sh
 mkdir -p hello/src;printf "#include <stdio.h>\nint main(void) {\nprintf(\"hello world\\n\");\nreturn 0;\n}" > hello/src/main.cpp;printf "cmake_minimum_required(VERSION 2.6)\nadd_executable(main main.cpp)" > hello/src/CMakeLists.txt
 #+END_SRC
 
-2. Use cmake as usual
+** Use cmake as usual
 #+BEGIN_SRC sh
 mkdir hello/build;cd hello/build;cmake ../src
 #+END_SRC
@@ -49,19 +49,19 @@ If you use another directory name like "mybuild" instead of "build", you must ad
 (setq cppcm-build-dirname "mybuild")
 #+END_SRC
 
-3. Open main.cpp with Emacs and enable flymake: `M-x flymake-mode`.
+** Open main.cpp with Emacs and enable flymake: `M-x flymake-mode`.
 Now typing some random code and watch the real time hint on your syntax errors.
 
-4. Compile as usual
+** Compile as usual
 Compile the program: `M-x compile`
 
 Note the default command line is `make -C ~/your-projects-blah-blah/hello/build`
 
-5. Start gdb
+** Start gdb
 Press hot key `C-c C-g` (suppose you've copied my configuration from previous section).
 
-6. OPTIONAL, if you've installed auto-complete and auto-complete-clang.
-Use them as usual. You will note the intellisense is much precise than before.
+** OPTIONAL, if you've installed auto-complete and auto-complete-clang.
+Use them as usual. You will note the Intellisense/auto-complete is more precise than before.
 
 Note the gud-gdb starts and the executable "~/your-projects-blah-blah/hello/build/main" is loaded automatically.
 * Contact me
