@@ -66,7 +66,7 @@ Note the gud-gdb starts and the executable "~/your-projects-blah-blah/hello/buil
 Use them as usual. You can see that the Intellisense/auto-complete is more precise than before.
 
 * Contact me
-You can report at [[https://github.com/redguardtoo/cpputils-cmake]]. My email is <chenbin DOT sh AT gmail>.
+You can report bugs at [[https://github.com/redguardtoo/cpputils-cmake]]. My email is <chenbin DOT sh AT gmail>.
 * License
 Copyright (C) 2012 Chen Bin
 
