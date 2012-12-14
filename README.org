@@ -1,4 +1,4 @@
-* cpputils-cmake.el (current version 0.0.3)
+* cpputils-cmake.el (current version 0.0.4)
 cpputils-cmake automatically enable real time syntax check (Flymake) and IntelliSense (auto-complete+auto-complete-clang) if you use [[http://www.cmake.org][CMake]].
 
 It does all the configuration dirty job automatically for you. So you can use Flymake, auto-complete, auto-complete-clang, compile with almost no configuration.
@@ -28,22 +28,42 @@ Copy and paste below code into your .emacs:
   ; fixed rinari's bug.
   (remove-hook 'find-file-hook 'rinari-launch)
   ))
-#+END_SRC
-* How to use it (for non-geeks)
-After configuration, you can forget cpputils-cmake. Just enjoy Flymake, auto-complete, auto-complete-clang and compile. 
-* Handy tools
-The command `cppcm-get-exe-path-current-buffer` copy the executable's full path into clipboard.
-
-It return the full path at the same time.
-
-You can use it with the command `gud-gdb`:
-#+BEGIN_SRC elisp
+;; OPTIONAL, avoid typing full path when starting gdb
 (global-set-key (kbd "C-c C-g")
  '(lambda ()(interactive) (gud-gdb (concat "gdb --fullname " (cppcm-get-exe-path-current-buffer))))
 )
 #+END_SRC
+* One minute step by step tutorial
+1. Create a hello world C++ project running one line shell script
+#+BEGIN_SRC sh
+mkdir -p hello/src;printf "#include <stdio.h>\nint main(void) {\nprintf(\"hello world\\n\");\nreturn 0;\n}" > hello/src/main.cpp;printf "cmake_minimum_required(VERSION 2.6)\nadd_executable(main main.cpp)" > hello/src/CMakeLists.txt
+#+END_SRC
 
-The purpose of above script is to avoid typing the executable's path when you start gdb.
+2. Use cmake as usual
+#+BEGIN_SRC sh
+mkdir hello/build;cd hello/build;cmake ../src
+#+END_SRC
+
+If you use another directory name like "mybuild" instead of "build", you must add following line into your .emacs:
+#+BEGIN_SRC elisp
+(setq cppcm-build-dirname "mybuild")
+#+END_SRC
+
+3. Open main.cpp with Emacs and enable flymake: `M-x flymake-mode`.
+Now typing some random code and watch the real time hint on your syntax errors.
+
+4. Compile as usual
+Compile the program: `M-x compile`
+
+Note the default command line is `make -C ~/your-projects-blah-blah/hello/build`
+
+5. Start gdb
+Press hot key `C-c C-g` (suppose you've copied my configuration from previous section).
+
+6. OPTIONAL, if you've installed auto-complete and auto-complete-clang.
+Use them as usual. You will note the intellisense is much precise than before.
+
+Note the gud-gdb starts and the executable "~/your-projects-blah-blah/hello/build/main" is loaded automatically.
 * Contact me
 You can report at [[https://github.com/redguardtoo/cpputils-cmake]]. My email is <chenbin DOT sh AT gmail>.
 * License

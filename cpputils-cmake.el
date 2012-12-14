@@ -4,7 +4,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake
-;; Version: 0.0.3
+;; Version: 0.0.4
 
 ;; This file is not part of GNU Emacs.
 
@@ -176,7 +176,7 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
       (setq executable (cppcm-query-var cm "\s*add_executable\s*(\\([^\s]+\\)"))
       ;; (setq executable (cppcm-query-var cm "\s*add_executable(\\s*\\([\\$\\{\\}\\w]+\\)"))
       (when executable
-        (setq executable (if (string= (substring executable 0 2) "${") (cppcm-guess-var (substring executable 2 -1) cm) ))
+        (setq executable (if (string= (substring executable 0 2) "${") (cppcm-guess-var (substring executable 2 -1) cm) executable))
         (setq mk (concat (file-name-as-directory src-dir) "Makefile"))
         (cppcm-create-one-makefile root-src-dir build-dir cm executable mk)
         )
