@@ -4,7 +4,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake
-;; Version: 0.0.4
+;; Version: 0.0.5
 
 ;; This file is not part of GNU Emacs.
 
@@ -230,7 +230,7 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
         sd
         bd
         )
-    (clrhash cppcm-hash)
+    ;; (clrhash cppcm-hash) ; if we open a cmake and non-cmake project ...
     (when (cppcm-get-dirs)
       (cppcm-create-flymake-makefiles cppcm-src-dir cppcm-src-dir cppcm-build-dir)
       (cppcm-set-cxxflags-current-buffer)
