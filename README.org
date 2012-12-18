@@ -21,7 +21,7 @@ Copy and paste below code into your .emacs:
 * One minute step by step tutorial
 ** Create a hello world C++ project running one line shell script
 #+BEGIN_SRC sh
-mkdir -p hello/src;printf "#include <stdio.h>\nint main(void) {\nprintf(\"hello world\\n\");\nreturn 0;\n}" > hello/src/main.cpp;printf "cmake_minimum_required(VERSION 2.6)\nadd_executable(main main.cpp)" > hello/src/CMakeLists.txt
+mkdir -p hello/src;printf "#include <stdio.h>\nint main(void) {\nprintf(\"hello world\");\nreturn 0;\n}" > hello/src/main.cpp;printf "cmake_minimum_required(VERSION 2.6)\nadd_executable(main main.cpp)" > hello/src/CMakeLists.txt
 #+END_SRC
 
 ** Use cmake as usual
