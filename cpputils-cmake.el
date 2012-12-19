@@ -4,7 +4,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake
-;; Version: 0.0.7
+;; Version: 0.0.8
 
 ;; This file is not part of GNU Emacs.
 
@@ -55,14 +55,31 @@
     )
   )
 
-(defun cppcm-query-all-vars (f re)
+;; get all the possible targets
+(defun cppcm-query-targets (f)
   (let ((vars ())
+        (re "\\(add_executable\\|add_library\\)\s*(\\([^\s]+\\)")
+        lines)
+    (setq lines (cppcm-readlines f))
+    (dolist (l lines)
+      (when (string-match re l)
+        (push (list (downcase (match-string 1 l)) (match-string 2 l)) vars)
+        )
+      )
+    vars
+    )
+  )
+;; get all the possible targets
+;; @return matched line, use (match-string 2 line) to get results
+(defun cppcm-match-all-lines (f)
+  (let ((vars ())
+        (re "\\(add_executable|add_library\\)\s*(\\([^\s]+\\)")
         lines)
     (setq lines (cppcm-readlines f))
     (catch 'brk
       (dolist (l lines)
         (when (string-match re l)
-          (push (match-string 1 l) vars)
+          (push l vars)
           )
         )
       )
@@ -149,11 +166,37 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
     v
   ))
 
-(defun cppcm-create-one-makefile (root-src-dir build-dir cm executable mk)
+;; @return full path of executable and we are sure it exists
+(defun cppcm-guess-exe-full-path (exe-dir tgt)
+  (let (p
+        (type (car tgt))
+        (e (cadr tgt))
+        )
+    (if (string= type "add_executable")
+        (progn
+          ;; application bundle on OS X?
+          (setq p (concat exe-dir e (if (eq system-type 'darwin) (concat ".app/Contents/MacOS/" e))))
+          ;; maybe the guy on Mac prefer raw application? try again.
+          (if (not (file-exists-p p)) (setq p (concat exe-dir e)))
+          (if (not (file-exists-p p)) (setq p nil))
+          )
+      (if (file-exists-p (concat exe-dir "lib" e ".a"))
+          (setq p (concat exe-dir "lib" e ".a"))
+        (if (file-exists-p (concat exe-dir "lib" e ".so"))
+            (setq p (concat exe-dir "lib" e ".so"))
+          (if (file-exists-p (concat exe-dir "lib" e ".dylib"))
+              (setq p (concat exe-dir "lib" e ".dylib"))
+            (setq p nil)
+            ))))
+    p
+    ))
+
+(defun cppcm-create-one-makefile (root-src-dir build-dir cm tgt mk)
   (let (flag-make
         cppflags
         exe-dir
         exe-full-path
+        (executable (cadr tgt))
         ml
         is-c
         )
@@ -168,19 +211,7 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
            ".dir/flags.make"
            ))
     ;; try to guess the executable file full path
-    (setq exe-full-path
-          (concat
-           exe-dir
-           executable
-           (if (eq system-type 'darwin) (concat ".app/Contents/MacOS/" executable))
-           )
-          )
-    (if (not (file-exists-p exe-full-path))
-        (setq exe-full-path (concat exe-dir executable))
-        )
-    (if (not (file-exists-p exe-full-path))
-        (setq exe-full-path nil)
-        )
+    (setq exe-full-path (cppcm-guess-exe-full-path exe-dir tgt))
     (when exe-full-path
       (puthash (concat cm "exe-full-path") exe-full-path cppcm-hash)
       (setq ml (cppcm-query-match-line flag-make "\s*\\(CX\\{0,2\\}_FLAGS\\)\s*=\s*\\(.*\\)"))
@@ -209,19 +240,20 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
         cm
         mk
         subdir
-        possible-exes
+        possible-targets
+        tgt
         e
         )
     ;; search all the subdirectory for CMakeLists.txt
     (setq cm (concat (file-name-as-directory src-dir) "CMakeLists.txt"))
-    ;; open CMakeLists.txt and find add_executable
+    ;; open CMakeLists.txt and find
     (when (file-exists-p cm)
-      (setq possible-exes (cppcm-query-all-vars cm "add_executable\s*(\\([^\s]+\\)"))
-      (dolist (e possible-exes)
-        ;; (message "e=%s" e)
+      (setq possible-targets (cppcm-query-targets cm))
+      (dolist (tgt possible-targets)
+        (setq e (cadr tgt))
         (setq e (if (string= (substring e 0 2) "${") (cppcm-guess-var (substring e 2 -1) cm) e))
         (setq mk (concat (file-name-as-directory src-dir) cppcm-makefile-name))
-        (cppcm-create-one-makefile root-src-dir build-dir cm e mk)
+        (cppcm-create-one-makefile root-src-dir build-dir cm tgt mk)
         )
       )
     (dolist (f (directory-files base))
