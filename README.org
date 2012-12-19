@@ -1,4 +1,4 @@
-* cpputils-cmake.el (current version 0.0.6)
+* cpputils-cmake.el (current version 0.0.7)
 cpputils-cmake automatically enable real time syntax check (Flymake) and IntelliSense (auto-complete+auto-complete-clang) if you use [[http://www.cmake.org][CMake]].
 
 It does all the configuration dirty job automatically for you. So you can use Flymake, auto-complete, auto-complete-clang, compile with almost no configuration.
@@ -19,14 +19,15 @@ Copy and paste below code into your .emacs:
 )
 #+END_SRC
 * One minute step by step tutorial
-** Create a hello world C++ project running one line shell script
+** Create a "hello world" C++ project by running one line shell script
 #+BEGIN_SRC sh
 mkdir -p hello/src;printf "#include <stdio.h>\nint main(void) {\nprintf(\"hello world\");\nreturn 0;\n}" > hello/src/main.cpp;printf "cmake_minimum_required(VERSION 2.6)\nadd_executable(main main.cpp)" > hello/src/CMakeLists.txt
 #+END_SRC
 
 ** Use cmake as usual
+Please note you need run "Make" at least once before using cpputils-cmake:
 #+BEGIN_SRC sh
-mkdir hello/build;cd hello/build;cmake ../src
+mkdir hello/build;cd hello/build;cmake ../src;make clean;make
 #+END_SRC
 
 If you use another directory name like "mybuild" instead of "build", you must add following line into your .emacs:
