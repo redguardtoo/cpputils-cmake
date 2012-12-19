@@ -4,7 +4,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake
-;; Version: 0.0.9
+;; Version: 0.1.0
 
 ;; This file is not part of GNU Emacs.
 
@@ -261,8 +261,11 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
     (when (file-exists-p cm)
       (setq possible-targets (cppcm-query-targets cm))
       (dolist (tgt possible-targets)
+        ;; if the target is ${VAR_NAME}, we need query CMakeLists.txt to find actual value
+        ;; of the target
         (setq e (cadr tgt))
         (setq e (if (string= (substring e 0 2) "${") (cppcm-guess-var (substring e 2 -1) cm) e))
+        (setcar (nthcdr 1 tgt) e)
         (setq mk (concat (file-name-as-directory src-dir) cppcm-makefile-name))
         (cppcm-create-one-makefile root-src-dir build-dir cm tgt mk)
         )

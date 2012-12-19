@@ -1,4 +1,4 @@
-* cpputils-cmake.el (current version 0.0.9)
+* cpputils-cmake.el (current version 0.1.0)
 cpputils-cmake automatically enable real time syntax check (Flymake) and IntelliSense (auto-complete+auto-complete-clang) if you use [[http://www.cmake.org][CMake]].
 
 It does all the configuration dirty job automatically for you. So you can use Flymake, auto-complete, auto-complete-clang, compile with almost no configuration.
