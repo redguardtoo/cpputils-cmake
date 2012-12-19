@@ -1,4 +1,4 @@
-* cpputils-cmake.el (current version 0.0.8)
+* cpputils-cmake.el (current version 0.0.9)
 cpputils-cmake automatically enable real time syntax check (Flymake) and IntelliSense (auto-complete+auto-complete-clang) if you use [[http://www.cmake.org][CMake]].
 
 It does all the configuration dirty job automatically for you. So you can use Flymake, auto-complete, auto-complete-clang, compile with almost no configuration.
@@ -41,8 +41,11 @@ Now typing some random code and watch the real time hint on your syntax errors.
 ** Compile as usual
 Compile the program: `M-x compile`
 
-Note the default command line is `make -C ~/your-projects-blah-blah/hello/build`
+Note the default command line displayed in minibuffer is `make -C ~/your-projects-blah-blah/hello/build`
 
+BTW, you can also run the command `M-x cppcm-compile` to compile the current excutable only.
+
+Note the actual command displayed in minibuffer is `make -C ~/your-project-blah-blah/hello/build/sub-project-dir-if-your-are-editing-its-cpp-file`
 ** Start gdb
 Press hot key `C-c C-g` (suppose you've copied my configuration from previous section).
 

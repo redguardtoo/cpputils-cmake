@@ -4,7 +4,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake
-;; Version: 0.0.8
+;; Version: 0.0.9
 
 ;; This file is not part of GNU Emacs.
 
@@ -191,6 +191,16 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
     p
     ))
 
+(defun cppcm-get-exe-dir-path-current-buffer ()
+  (let (cm
+        exe-path
+        )
+    (setq cm (concat (file-name-as-directory (file-name-directory buffer-file-name)) "CMakeLists.txt"))
+    (setq exe-path (gethash (concat cm "exe-dir") cppcm-hash))
+    exe-path
+    )
+  )
+
 (defun cppcm-create-one-makefile (root-src-dir build-dir cm tgt mk)
   (let (flag-make
         cppflags
@@ -212,6 +222,7 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
            ))
     ;; try to guess the executable file full path
     (setq exe-full-path (cppcm-guess-exe-full-path exe-dir tgt))
+    (puthash (concat cm "exe-dir") exe-dir cppcm-hash)
     (when exe-full-path
       (puthash (concat cm "exe-full-path") exe-full-path cppcm-hash)
       (setq ml (cppcm-query-match-line flag-make "\s*\\(CX\\{0,2\\}_FLAGS\\)\s*=\s*\\(.*\\)"))
@@ -311,6 +322,15 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
       (cppcm-set-cxxflags-current-buffer)
       )
     )
+  )
+
+;;;###autoload
+(defun cppcm-compile ()
+  "compile the executable/library in current directory"
+  (interactive)
+  (when (and cppcm-build-dir (file-exists-p (concat cppcm-build-dir "CMakeCache.txt")))
+    (setq compile-command (concat "make -C " (cppcm-get-exe-dir-path-current-buffer))))
+  (call-interactively 'compile)
   )
 
 ;;;###autoload
