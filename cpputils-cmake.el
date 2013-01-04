@@ -225,8 +225,8 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
     (puthash (concat cm "exe-dir") exe-dir cppcm-hash)
     (when exe-full-path
       (puthash (concat cm "exe-full-path") exe-full-path cppcm-hash)
-      (setq ml (cppcm-query-match-line flag-make "\s*\\(CX\\{0,2\\}_FLAGS\\)\s*=\s*\\(.*\\)"))
-      (when (and (file-exists-p flag-make) ml)
+      (when (and (file-exists-p flag-make)
+              (setq ml (cppcm-query-match-line flag-make "\s*\\(CX\\{0,2\\}_FLAGS\\)\s*=\s*\\(.*\\)")))
         (setq is-c (if (string= (match-string 1 ml) "C_FLAGS") "C" "CXX"))
         (setq cppflags (cppcm-trim-cppflags (match-string 2 ml)))
         (puthash cm cppflags cppcm-hash)
