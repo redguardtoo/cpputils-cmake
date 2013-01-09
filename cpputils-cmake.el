@@ -294,8 +294,13 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
         )
     (setq cm (concat (file-name-as-directory (file-name-directory buffer-file-name)) "CMakeLists.txt"))
     (setq exe-path (gethash (concat cm "exe-full-path") cppcm-hash))
-    (kill-new exe-path)
-    (message "%s => clipboard" exe-path)
+    (if exe-path
+        (progn
+          (kill-new exe-path)
+          (message "%s => clipboard" exe-path)
+          )
+      (message "executable missing! Please run 'M-x compile' at first.")
+      )
     exe-path
     )
   )
