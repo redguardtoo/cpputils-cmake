@@ -320,9 +320,12 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
         bd
         )
     ;; (clrhash cppcm-hash) ; if we open a cmake and non-cmake project ...
-    (when (cppcm-get-dirs)
-      (cppcm-create-flymake-makefiles cppcm-src-dir cppcm-src-dir cppcm-build-dir)
-      (cppcm-set-cxxflags-current-buffer)
+    (if (cppcm-get-dirs)
+        (progn
+          (cppcm-create-flymake-makefiles cppcm-src-dir cppcm-src-dir cppcm-build-dir)
+          (cppcm-set-cxxflags-current-buffer)
+          )
+      (message "Build directory is missing! Create the directory. Then run cmake and make in it.")
       )
     )
   )

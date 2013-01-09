@@ -51,15 +51,20 @@ Press hot key `C-c C-g` (suppose you've copied my configuration from previous se
 
 Note the gud-gdb starts and the executable "~/your-projects-blah-blah/hello/build/main" is loaded automatically.
 
-** OPTIONAL, if you've installed auto-complete and auto-complete-clang.
-Use them as usual. You can see that the Intellisense/auto-complete is more precise than before.
+** If you've installed auto-complete and auto-complete-clang (OPTIONAL)
+Use them as usual. You can see that the Intellisense/auto-complete is more precise.
+* Tips (OPTIONAL)
+The command "cppcm-get-exe-path-current-buffer" will copy the current executable into the kill ring (clipboard).
 
+This could be very useful if you want to access the directory directory of the executable as quickly as possible.
+
+You can yank (paste) the full path to the eshell or minibuffer and press "M-backspace" to get the directory name.
 * Contact me
 You can report bugs at [[https://github.com/redguardtoo/cpputils-cmake]]. My email is <chenbin DOT sh AT gmail>.
 * License
 Copyright (C) 2012 Chen Bin
 
-Author: Chen Bin <chenbin.sh@gmail.com> Keywords: flymake IntelliSense cmake
+Author: Chen Bin <chenbin DOT sh AT gmail DOT com> Keywords: flymake IntelliSense cmake
 
 This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
