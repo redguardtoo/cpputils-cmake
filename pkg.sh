@@ -1,6 +1,6 @@
 #!/bin/bash
 #pkg=cpputils-cmake-`date +%Y%m%d.%H%M`
-pkg=cpputils-cmake-0.1.0
+pkg=cpputils-cmake-0.1.1
 mkdir $pkg
 cp README.org $pkg
 cp *.el $pkg
