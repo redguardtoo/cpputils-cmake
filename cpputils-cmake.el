@@ -4,7 +4,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake
-;; Version: 0.1.2
+;; Version: 0.1.3
 
 ;; This file is not part of GNU Emacs.
 
@@ -29,6 +29,24 @@
 (defvar cppcm-hash (make-hash-table :test 'equal))
 (defconst cppcm-prog "cpputils-cmake")
 (defconst cppcm-makefile-name "Makefile")
+
+(defvar cppcm-compile-list
+  '(cppcm-compile-in-current-exe-dir
+    compile
+    cppcm-compile-in-root-build-dir)
+  "The list of compile commands.
+The sequence is the calling sequence when give prefix argument.
+
+For example:
+  If you use the default sequence, such as
+  '(cppcm-compile-in-current-exe-dir
+    compile
+    cppcm-compile-in-root-build-dir)
+  then you can run following commands.
+'M-x cppcm-compile'         => `cppcm-compile-in-current-exe-dir'
+'C-u M-x cppcm-compile'     => `compile'
+'C-u C-u M-x cppcm-compile' => `cppcm-compile-in-root-build-dir'.
+")
 
 (defun cppcm-readlines (fPath)
     "Return a list of lines of a file at fPath."
@@ -316,6 +334,20 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
     )
   )
 
+(defun cppcm-compile-in-current-exe-dir ()
+  "compile the executable/library in current directory."
+  (interactive)
+  (setq compile-command (concat "make -C " (cppcm-get-exe-dir-path-current-buffer)))
+  (call-interactively 'compile)
+  )
+
+(defun cppcm-compile-in-root-build-dir ()
+  "compile in build directory"
+  (interactive)
+  (setq compile-command (concat "make -C " cppcm-build-dir))
+  (call-interactively 'compile)
+  )
+
 ;;;###autoload
 (defun cppcm-create-or-update-flymake-files ()
   "Create flymake files used by flymake and data used by (cppcm-get-cppflags-in-current-buffer)"
@@ -336,13 +368,16 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
   )
 
 ;;;###autoload
-(defun cppcm-compile ()
-  "compile the executable/library in current directory"
-  (interactive)
+(defun cppcm-compile (&optional prefix)
+  "compile the executable/library in current directory,
+default compile command or compile in the build directory.
+You can specify the sequence which compile is default
+by customize `cppcm-compile-list'."
+  (interactive "p")
   (when (and cppcm-build-dir (file-exists-p (concat cppcm-build-dir "CMakeCache.txt")))
-    (setq compile-command (concat "make -C " (cppcm-get-exe-dir-path-current-buffer))))
-  (call-interactively 'compile)
-  )
+    (let ((index (round (log prefix 4))))
+      (call-interactively (nth index cppcm-compile-list))
+      )))
 
 ;;;###autoload
 (defun cppcm-reload-all ()
