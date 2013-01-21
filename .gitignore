@@ -24,3 +24,6 @@ Session.vim
 *.tar
 *.elc
 
+GTAGS
+GPATH
+GRTAGS
