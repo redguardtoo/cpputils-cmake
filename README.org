@@ -41,18 +41,24 @@ Now typing some random code and watch the real time hint on your syntax errors.
 ** Compile as usual
 Compile the program: `M-x compile`
 
-Note the default command line displayed in minibuffer is `make -C ~/your-projects-blah-blah/hello/build`
+You can see the default command line displayed in minibuffer is `make -C ~/your-projects-blah-blah/hello/build`
 
 BTW, you can also run the command `M-x cppcm-compile` to compile the current excutable only.
 
-Note the actual command displayed in minibuffer is `make -C ~/your-project-blah-blah/hello/build/sub-project-dir-if-your-are-editing-its-cpp-file`
+You can see the actual command displayed in minibuffer is `make -C ~/your-project-blah-blah/hello/build/sub-project-dir-if-your-are-editing-its-cpp-file`
 ** Start gdb
 Press hot key `C-c C-g` (suppose you've copied my configuration from previous section).
 
-Note the gud-gdb starts and the executable "~/your-projects-blah-blah/hello/build/main" is loaded automatically.
+You can see the gud-gdb starts and the executable "~/your-projects-blah-blah/hello/build/main" is loaded automatically.
 
 ** If you've installed auto-complete and auto-complete-clang (OPTIONAL)
 Use them as usual. You can see that the Intellisense/auto-complete is more precise.
+
+** Open included C/C++ header file
+Press the hot key `C-x C-o` or `M-x ff-find-other-file`. The corresponding header file is opened correctly.
+
+This is the default feature of Emacs. What cpputils-cmake does is set up the directories of those header files for you automatically so that the header files could be found by Emacs.
+
 * Tips (OPTIONAL)
 The command "cppcm-get-exe-path-current-buffer" will copy the current executable into the kill ring (clipboard).
 
