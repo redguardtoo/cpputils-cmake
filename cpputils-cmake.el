@@ -175,12 +175,21 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
 
 (defun cppcm-trim-cppflags (cppflags)
   (let (tks
+        (next-tk-is-included-dir nil)
         (v ""))
     (setq tks (split-string (cppcm-trim-string cppflags) "\s+" t))
     (dolist (tk tks v)
-      (when (string= (substring tk 0 2) "-I")
-        (setq v (concat v " " tk))
-        ))
+      (if next-tk-is-included-dir
+          (progn
+            (setq v (concat v " -I" tk))
+            (setq next-tk-is-included-dir nil)
+            )
+        (if (string= (substring tk 0 2) "-I")
+            (setq v (concat v " " tk))
+          (if (string= tk "-isystem") (setq next-tk-is-included-dir t))
+          )
+        )
+      )
     v
   ))
 
