@@ -4,7 +4,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake
-;; Version: 0.2.0
+;; Version: 0.3.0
 
 ;; This file is not part of GNU Emacs.
 
@@ -396,6 +396,7 @@ by customize `cppcm-compile-list'."
   (when cppcm-include-dirs
     ;; for auto-complete-clang
     (setq ac-clang-flags cppcm-include-dirs)
+    (setq company-clang-arguments cppcm-include-dirs)
     ;; set cc-search-directories automatically, so ff-find-other-file will succeed
     (add-hook 'ff-pre-find-hook
               '(lambda ()
