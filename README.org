@@ -67,7 +67,7 @@ The command "cppcm-get-exe-path-current-buffer" will copy the current executable
 
 You need install `xsel` under Linux to support OS clipboard.
 
-This could be very useful if you want to access the directory directory of the executable as quickly as possible.
+This could be very useful if you want to access the directory of the executable as quickly as possible.
 
 You can yank (paste) the full path to the eshell or minibuffer and press "M-backspace" to get the directory name.
 * Contact me
