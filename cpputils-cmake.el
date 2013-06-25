@@ -47,6 +47,17 @@ For example:
 'C-u M-x cppcm-compile'     => `compile'
 'C-u C-u M-x cppcm-compile' => `cppcm-compile-in-root-build-dir'.
 ")
+(defun cppcm-share-str (msg)
+  (kill-new msg)
+  (with-temp-buffer
+    (insert msg)
+    (shell-command-on-region (point-min) (point-max)
+                             (cond
+                              ((eq system-type 'cygwin) "putclip")
+                              ((eq system-type 'darwin) "pbcopy")
+                              (t "xsel -ib")
+                              )))
+  )
 
 (defun cppcm-readlines (fPath)
     "Return a list of lines of a file at fPath."
@@ -193,6 +204,7 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
     v
   ))
 
+;; I don't consider the win32 environment because cmake support Visual Studio
 ;; @return full path of executable and we are sure it exists
 (defun cppcm-guess-exe-full-path (exe-dir tgt)
   (let (p
@@ -323,7 +335,7 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
     (setq exe-path (gethash (concat cm "exe-full-path") cppcm-hash))
     (if exe-path
         (progn
-          (kill-new exe-path)
+          (cppcm-share-str exe-path)
           (message "%s => clipboard" exe-path)
           )
       (message "executable missing! Please run 'M-x compile' at first.")
