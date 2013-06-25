@@ -4,7 +4,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake
-;; Version: 0.3.0
+;; Version: 0.3.1
 
 ;; This file is not part of GNU Emacs.
 
