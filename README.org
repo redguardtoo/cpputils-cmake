@@ -8,11 +8,11 @@ cpputils-cmake is already uploaded to [[http://marmalade-repo.org/]]. So the bes
 * Set up
 Copy and paste below code into your .emacs:
 #+BEGIN_SRC elisp
-(add-hook 'c-mode-common-hook (lambda ()
-  (cppcm-reload-all)
-  ; fixed rinari's bug.
-  (remove-hook 'find-file-hook 'rinari-launch)
-  ))
+(add-hook 'c-mode-hook (lambda () (cppcm-reload-all)))
+(add-hook 'c++-mode-hook (lambda () (cppcm-reload-all)))
+;; OPTIONAL, somebody reported that they can use this package with Fortran
+(add-hook 'c90-mode-hook (lambda () (cppcm-reload-all)))
+
 ;; OPTIONAL, avoid typing full path when starting gdb
 (global-set-key (kbd "C-c C-g")
  '(lambda ()(interactive) (gud-gdb (concat "gdb --fullname " (cppcm-get-exe-path-current-buffer))))
@@ -63,13 +63,17 @@ Press the hot key `C-x C-o` or `M-x ff-find-other-file`. The corresponding heade
 This is the default feature of Emacs. What cpputils-cmake does is set up the directories of those header files for you automatically so that the header files could be found by Emacs.
 
 * Tips (OPTIONAL)
-The command "cppcm-get-exe-path-current-buffer" will copy the current executable into the kill ring (clipboard).
+The command "cppcm-get-exe-path-current-buffer" will copy the current executable into the kill ring and OS clipboard.
+
+You need install `xsel` under Linux to support OS clipboard.
 
 This could be very useful if you want to access the directory directory of the executable as quickly as possible.
 
 You can yank (paste) the full path to the eshell or minibuffer and press "M-backspace" to get the directory name.
 * Contact me
 You can report bugs at [[https://github.com/redguardtoo/cpputils-cmake]]. My email is <chenbin DOT sh AT gmail>.
+
+Please use github issue tracker instead of email me directly if you want my response ASAP. It's because github will email me any issue you submit. The github email will be put into my "IMPORTANT" folder automatically. But regular email in my "INBOX" folder will be mixed with spams. I got lots of spams these days.
 * License
 Copyright (C) 2012 Chen Bin
 
