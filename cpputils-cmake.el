@@ -4,7 +4,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake
-;; Version: 0.3.2
+;; Version: 0.3.3
 
 ;; This file is not part of GNU Emacs.
 
@@ -171,12 +171,11 @@ For example:
     (cppcm-query-var cm (concat "\s*set(\s*" var "\s+\\(\\w+\\)\s*)" ) )
   )
 
-(defun cppcm-replace-once (pattern str)
-  (let (re)
-    (setq re (concat "\\(" pattern "\\).*\\'"))
-    ;; don't know why, copied from API documentation
-    (replace-regexp-in-string re "" str nil nil 1)
-    )
+(defun cppcm-strip-prefix (prefix str)
+  "strip prefix from str"
+  (if (string-equal (substring str 0 (length prefix)) prefix)
+      (substring str (length prefix))
+    str)
   )
 
 (defun cppcm-trim-string (string)
@@ -251,7 +250,7 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
         )
     (setq exe-dir (concat
                    (directory-file-name build-dir)
-                   (cppcm-replace-once root-src-dir (file-name-directory cm))))
+                   (cppcm-strip-prefix root-src-dir (file-name-directory cm))))
     (setq flag-make
           (concat
            exe-dir
