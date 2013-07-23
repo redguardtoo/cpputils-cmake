@@ -4,7 +4,7 @@ cpputils-cmake automatically enable real time syntax check (Flymake) and Intelli
 It does all the configuration dirty job *automatically* for you. So you can use Flymake, auto-complete, auto-complete-clang, company-mode, compile, ff-find-other-file (if you press `C-x C-o` in C/C++ file, ff-find-other-file will open *correct* header file under cursor) with almost no configuration.
 
 Key points before you continue:
-- It's lightweight. It only cost me one line code to add a fancy feature. How could extra one line code make cpputils-cmake more heavy weight? Besides, I am C developer with more than ten years experience, so I may be qualified avoid my
+- It's lightweight. It only cost me one line code to add a fancy feature. How could extra one line code make cpputils-cmake more heavy weight? Besides, I am a C developer with more than ten years experience, so I may be performance aware.
 - easy to use, copy the elisp code in "Set up" section into you ~/.emacs. DONE! You don't need read remaining sections which are just PR statements about how cool when you begin to use cpputils-cmake.
 - cpputils-cmake will enhance/configure lots of third party plugins *automatically* for you. But it's *NOT* dependent on those plugins. The only third party tool required is cmake.
 
