@@ -1,4 +1,4 @@
-* cpputils-cmake.el (current version 0.3.3)
+* cpputils-cmake.el (current version 0.3.4)
 cpputils-cmake automatically enable real time syntax check (Flymake) and IntelliSense (auto-complete+auto-complete-clang, company-mode) if you use [[http://www.cmake.org][CMake]].
 
 It does all the configuration dirty job *automatically* for you. So you can use Flymake, auto-complete, auto-complete-clang, company-mode, compile, ff-find-other-file (if you press `C-x C-o` in C/C++ file, ff-find-other-file will open *correct* header file under cursor) with almost no configuration.
@@ -68,6 +68,7 @@ Press the hot key `C-x C-o` or `M-x ff-find-other-file`. The corresponding heade
 This is the default feature of Emacs. What cpputils-cmake does is set up the directories of those header files for you automatically so that the header files could be found by Emacs.
 
 * Tips (OPTIONAL)
+** How to get the target executable's full path
 The command "cppcm-get-exe-path-current-buffer" will copy the current executable into the kill ring and OS clipboard.
 
 You need install `xsel` under Linux to support OS clipboard.
@@ -75,6 +76,10 @@ You need install `xsel` under Linux to support OS clipboard.
 This could be very useful if you want to access the directory of the executable as quickly as possible.
 
 You can yank (paste) the full path to the eshell or minibuffer and press "M-backspace" to get the directory name.
+
+** How to reload cpputils-cmake
+You can always `M-x cppcm-reload-all` any time.
+
 * Contact me
 You can report bugs at [[https://github.com/redguardtoo/cpputils-cmake]]. My email is <chenbin DOT sh AT gmail>.
 
