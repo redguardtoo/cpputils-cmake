@@ -22,6 +22,11 @@
   :type 'string
   :group 'cpputils-cmake)
 
+(defcustom cppcm-reload-all-hook nil
+  "hook after cppcm-reload-all is called. You can modify the global variables set up by cppcm-reload-all"
+  :type 'hook
+  :group 'cpputils-cmake)
+
 (defvar cppcm-build-dir nil "The full path of build directory")
 (defvar cppcm-src-dir nil "The full path of root source directory")
 (defvar cppcm-include-dirs nil "Value example: (\"-I/usr/src/include\" \"-I./inc\")")
@@ -445,6 +450,7 @@ by customize `cppcm-compile-list'."
   (when (and cppcm-build-dir (file-exists-p (concat cppcm-build-dir "CMakeCache.txt")))
     (setq compile-command (concat "make -C " cppcm-build-dir))
     )
+  (run-hook-with-args 'cppcm-reload-all-hook)
   )
 
 (provide 'cpputils-cmake)
