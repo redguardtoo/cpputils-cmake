@@ -435,7 +435,7 @@ by customize `cppcm-compile-list'."
   (cppcm-create-or-update-flymake-files)
   (when cppcm-include-dirs
     ;; for auto-complete-clang
-    (setq ac-clang-flags cppcm-include-dirs)
+    (setq ac-clang-flags (append cppcm-include-dirs cppcm-preprocess-defines))
     (setq company-clang-arguments (append cppcm-include-dirs cppcm-preprocess-defines))
     ;; set cc-search-directories automatically, so ff-find-other-file will succeed
     (add-hook 'ff-pre-find-hook
