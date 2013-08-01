@@ -277,7 +277,9 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
         (setq c-flags (cppcm-trim-compiling-flags (match-string 2 queried-c-flags) "-I"))
 
         (setq queried-c-defines (cppcm-query-match-line flag-make "\s*\\(CX\\{0,2\\}_DEFINES\\)\s*=\s*\\(.*\\)"))
-        (setq c-defines (cppcm-trim-compiling-flags (match-string 2 queried-c-defines) "-D"))
+        ;; (setq c-defines (cppcm-trim-compiling-flags (match-string 2 queried-c-defines) "-D"))
+        ;; just what ever preprocess flag we got
+        (setq c-defines (match-string 2 queried-c-defines))
 
         (puthash cm (list c-flags c-defines) cppcm-hash)
 
