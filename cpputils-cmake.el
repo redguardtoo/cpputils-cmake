@@ -151,10 +151,6 @@ For example:
     (setq cppcm-build-dir nil)
     (setq cppcm-src-dir nil)
     (catch 'brk
-           ; if current directory does not contain CMakeLists.txt, we assume the
-           ; whole project does not use cmake at all
-           (if (not (file-exists-p (concat crt-proj-dir "CMakeLists.txt"))) (throw 'brk nil))
-
            (while (and (< i cppcm-proj-max-dir-level) (not is-root-dir-found) )
                   (setq cppcm-build-dir (concat crt-proj-dir (file-name-as-directory cppcm-build-dirname)))
                   (cond ((and (file-exists-p (concat cppcm-build-dir "CMakeCache.txt")))
