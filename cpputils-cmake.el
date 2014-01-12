@@ -62,8 +62,7 @@ For example:
                               ((eq system-type 'cygwin) "putclip")
                               ((eq system-type 'darwin) "pbcopy")
                               (t "xsel -ib")
-                              )))
-  )
+                              ))))
 
 (defun cppcm-readlines (fPath)
     "Return a list of lines of a file at fPath."
@@ -71,9 +70,7 @@ For example:
             (insert-file-contents fPath)
                 (split-string (buffer-string) "\n" t)))
 
-(defun cppcm-parent-dir (d)
-  (file-name-directory (directory-file-name d))
-  )
+(defun cppcm-parent-dir (d) (file-name-directory (directory-file-name d)))
 
 (defun cppcm-query-var (f re)
   (let (v lines)
@@ -83,12 +80,9 @@ For example:
         (when (string-match re l)
           (setq v (match-string 1 l))
           (throw 'brk t)
-          )
-        )
-      )
+          )))
     v
-    )
-  )
+    ))
 
 ;; get all the possible targets
 (defun cppcm-query-targets (f)
@@ -99,11 +93,10 @@ For example:
     (dolist (l lines)
       (when (string-match re l)
         (push (list (downcase (match-string 1 l)) (match-string 2 l)) vars)
-        )
-      )
+        ))
     vars
-    )
-  )
+    ))
+
 ;; get all the possible targets
 ;; @return matched line, use (match-string 2 line) to get results
 (defun cppcm-match-all-lines (f)
@@ -115,12 +108,9 @@ For example:
       (dolist (l lines)
         (when (string-match re l)
           (push l vars)
-          )
-        )
-      )
+          )))
     vars
-    )
-  )
+    ))
 
 (defun cppcm-query-match-line (f re)
   "return match line"
@@ -131,23 +121,19 @@ For example:
         (when (string-match re l)
           (setq ml l)
           (throw 'brk t)
-          )
-        )
-      )
+          )))
     ml
-    )
-  )
+    ))
+
 ;; find the first line in CMakeCache.txt and assume it's the root src directory
 ;; kind of hack
 (defun cppcm-get-source-dir (d)
-    (cppcm-query-var (concat d "CMakeCache.txt") "[[:word:]]+_SOURCE_DIR\:STATIC\=\\(.*\\)")
-    )
+    (cppcm-query-var (concat d "CMakeCache.txt") "[[:word:]]+_SOURCE_DIR\:STATIC\=\\(.*\\)"))
 
 (defun cppcm-get-dirs ()
   (let ((crt-proj-dir (file-name-as-directory (file-name-directory buffer-file-name)))
         (i 0)
-        (is-root-dir-found nil)
-        )
+        (is-root-dir-found nil))
     (setq cppcm-build-dir nil)
     (setq cppcm-src-dir nil)
     (catch 'brk
@@ -160,18 +146,15 @@ For example:
                           (setq crt-proj-dir (cppcm-parent-dir crt-proj-dir))
                           )
                         )
-                  (setq i (+ i 1))
-                  )
+                  (setq i (+ i 1)))
            (when is-root-dir-found
              (setq cppcm-src-dir (cppcm-get-source-dir cppcm-build-dir))
-             )
-           )
+             ))
     is-root-dir-found
   ))
 
 (defun cppcm-guess-var (var cm)
-    (cppcm-query-var cm (concat "\s*set(\s*" var "\s+\\(\\w+\\)\s*)" ) )
-  )
+    (cppcm-query-var cm (concat "\s*set(\s*" var "\s+\\(\\w+\\)\s*)" )))
 
 (defun cppcm-strip-prefix (prefix str)
   "strip prefix from str"
@@ -200,9 +183,7 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
             (setq v (concat v " " tk))
           ;; corner case for "-I"
           (if (string= tk "-isystem") (setq next-tk-is-included-dir t))
-          )
-        )
-      )
+          )))
     v
   ))
 
@@ -240,8 +221,7 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
 
     (setq exe-path (gethash (concat cm "exe-dir") cppcm-hash))
     exe-path
-    )
-  )
+    ))
 
 (defun cppcm-create-one-makefile (root-src-dir build-dir cm tgt mk)
   (let (flag-make
@@ -294,11 +274,8 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
                           "_FLAGS} ${"
                           is-c
                           "_DEFINES} -S ${CHK_SOURCES}"
-                          ))
-          ))
-      )
-    )
-  )
+                          )))))
+    ))
 
 (defun cppcm-create-flymake-makefiles(root-src-dir src-dir build-dir)
   (let ((base src-dir)
@@ -335,10 +312,7 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
                  (not (equal f ".hg"))
                  )
         (cppcm-create-flymake-makefiles root-src-dir subdir build-dir)
-        )
-      )
-    )
-  )
+        ))))
 
 ;;;###autoload
 (defun cppcm-get-exe-path-current-buffer ()
@@ -356,8 +330,7 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
       (message "executable missing! Please run 'M-x compile' at first.")
       )
     exe-path
-    )
-  )
+    ))
 
 (defun cppcm-set-c-flags-current-buffer ()
   (interactive)
@@ -374,22 +347,19 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
 
     (setq cppcm-include-dirs (if c-flags (split-string c-flags "\s+" t)))
     (setq cppcm-preprocess-defines (if c-defines (split-string c-defines "\s+" t)))
-    )
-  )
+    ))
 
 (defun cppcm-compile-in-current-exe-dir ()
   "compile the executable/library in current directory."
   (interactive)
   (setq compile-command (concat "make -C " (cppcm-get-exe-dir-path-current-buffer)))
-  (call-interactively 'compile)
-  )
+  (call-interactively 'compile))
 
 (defun cppcm-compile-in-root-build-dir ()
   "compile in build directory"
   (interactive)
   (setq compile-command (concat "make -C " cppcm-build-dir))
-  (call-interactively 'compile)
-  )
+  (call-interactively 'compile))
 
 ;;;###autoload
 (defun cppcm-create-or-update-flymake-files ()
@@ -408,9 +378,7 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
               (cppcm-set-c-flags-current-buffer)
               )
           (message "Build directory is missing! Create the directory. Then run cmake and make in it."))
-      )
-    )
-  )
+      )))
 
 ;;;###autoload
 (defun cppcm-compile (&optional prefix)
