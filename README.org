@@ -1,4 +1,4 @@
-* cpputils-cmake.el (current version 0.4.0)
+* cpputils-cmake.el (current version 0.4.1)
 cpputils-cmake automatically enable real time syntax check (Flymake) and IntelliSense (auto-complete+auto-complete-clang, company-mode) if you use [[http://www.cmake.org][CMake]].
 
 It does all the configuration dirty job *automatically* for you. So you can use [[http://flymake.sourceforge.net/][Flymake]], [[http://cx4a.org/software/auto-complete/][auto-complete]], [[https://github.com/brianjcj/auto-complete-clang][auto-complete-clang]], [[https://github.com/company-mode/company-mode][company-mode]], [[http://www.emacswiki.org/emacs/CompileCommand][compile]], ff-find-other-file (if you press `C-x C-o` in C/C++ file, ff-find-other-file will open *correct* header file under cursor) with almost no configuration.
@@ -9,7 +9,15 @@ Key points before you continue:
 - cpputils-cmake will enhance/configure lots of third party plugins *automatically* for you. But it's *NOT* dependent on those plugins. The only third party tool required is cmake.
 
 * Install
+** Easy way
 cpputils-cmake is already uploaded to [[http://marmalade-repo.org/]]. So the best way to install it is using Emacs' package manager.
+** Manual way
+If you don't want to use package manager, you only need download the file cpputils-cmake.el and put it somewhere (say ~/.emacs/lisp), then add below code into your .emacs:
+#+BEGIN_SRC lisp
+(add-to-list 'load-path "~/.emacs.d/lisp/")
+(require 'cpputils-cmake)
+#+END_SRC
+
 * Set up
 Copy and paste below code into your .emacs:
 #+BEGIN_SRC elisp
@@ -17,11 +25,9 @@ Copy and paste below code into your .emacs:
 (add-hook 'c++-mode-hook (lambda () (cppcm-reload-all)))
 ;; OPTIONAL, somebody reported that they can use this package with Fortran
 (add-hook 'c90-mode-hook (lambda () (cppcm-reload-all)))
-
 ;; OPTIONAL, avoid typing full path when starting gdb
 (global-set-key (kbd "C-c C-g")
- '(lambda ()(interactive) (gud-gdb (concat "gdb --fullname " (cppcm-get-exe-path-current-buffer))))
-)
+ '(lambda ()(interactive) (gud-gdb (concat "gdb --fullname " (cppcm-get-exe-path-current-buffer)))))
 #+END_SRC
 * One minute step by step tutorial
 ** Create a "hello world" C++ project by running one line shell script
@@ -68,7 +74,7 @@ Press the hot key `C-x C-o` or `M-x ff-find-other-file`. The corresponding heade
 This is the default feature of Emacs. What cpputils-cmake does is set up the directories of those header files for you automatically so that the header files could be found by Emacs.
 
 * Tips (OPTIONAL)
-** How to get the target executable's full path
+** How to get the target's full path
 The command "cppcm-get-exe-path-current-buffer" will copy the current executable into the kill ring and OS clipboard.
 
 You need install `xsel` under Linux to support OS clipboard.
