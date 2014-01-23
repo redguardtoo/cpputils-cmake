@@ -4,7 +4,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake
-;; Version: 0.4.1
+;; Version: 0.4.2
 
 ;; This file is not part of GNU Emacs.
 
@@ -131,27 +131,36 @@ For example:
     (cppcm-query-var (concat d "CMakeCache.txt") "[[:word:]]+_SOURCE_DIR\:STATIC\=\\(.*\\)"))
 
 (defun cppcm-get-dirs ()
+  "search from current directory to the parent to locate build directory
+return (found possible-build-dir build-dir src-dir)"
   (let ((crt-proj-dir (file-name-as-directory (file-name-directory buffer-file-name)))
         (i 0)
-        (is-root-dir-found nil))
+        found
+        build-dir
+        src-dir
+        possible-build-dir)
     (setq cppcm-build-dir nil)
     (setq cppcm-src-dir nil)
     (catch 'brk
-           (while (and (< i cppcm-proj-max-dir-level) (not is-root-dir-found) )
-                  (setq cppcm-build-dir (concat crt-proj-dir (file-name-as-directory cppcm-build-dirname)))
-                  (cond ((and (file-exists-p (concat cppcm-build-dir "CMakeCache.txt")))
-                         (setq is-root-dir-found t)
-                         )
-                        (t ;default
-                          (setq crt-proj-dir (cppcm-parent-dir crt-proj-dir))
-                          )
-                        )
+           (while (and (< i cppcm-proj-max-dir-level) (not found) )
+                  (setq build-dir (concat crt-proj-dir (file-name-as-directory cppcm-build-dirname)))
+                  (cond
+                   ((and build-dir (file-exists-p (concat build-dir "CMakeCache.txt")))
+                    (setq found t)
+                    (setq cppcm-build-dir build-dir)
+                    )
+                   (t ;not a real build direcotyr,
+                    (if (file-exists-p build-dir)
+                        (setq possible-build-dir build-dir))
+                    ;; keep looking up the parent directory
+                    (setq crt-proj-dir (cppcm-parent-dir crt-proj-dir))
+                    ))
                   (setq i (+ i 1)))
-           (when is-root-dir-found
-             (setq cppcm-src-dir (cppcm-get-source-dir cppcm-build-dir))
+           (when found
+             (setq src-dir (cppcm-get-source-dir build-dir))
+             (setq cppcm-src-dir src-dir)
              ))
-    is-root-dir-found
-  ))
+    (list found possible-build-dir build-dir src-dir)))
 
 (defun cppcm-guess-var (var cm)
     (cppcm-query-var cm (concat "\s*set(\s*" var "\s+\\(\\w+\\)\s*)" )))
@@ -366,18 +375,23 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
   "Create flymake files used by flymake and data used by (cppcm-get-cppflags-in-current-buffer)"
   (interactive)
   (let (dirs
-        sd
-        bd
-        )
+        build-dir
+        src-dir)
     ;; (clrhash cppcm-hash) ; if we open a cmake and non-cmake project ...
     ;; when I export org file with some c++/c code embedded, the buffer-file-name is nil
-    (if buffer-file-name
-        (if (cppcm-get-dirs)
-            (progn
-              (cppcm-create-flymake-makefiles cppcm-src-dir cppcm-src-dir cppcm-build-dir)
-              (cppcm-set-c-flags-current-buffer)
-              )
-          (message "Build directory is missing! Create the directory. Then run cmake and make in it."))
+    (when buffer-file-name
+      (setq dirs (cppcm-get-dirs))
+      (cond
+       ((car dirs)
+        (setq build-dir (nth 2 dirs))
+        (setq src-dir (nth 3 dirs))
+        (cppcm-create-flymake-makefiles src-dir src-dir build-dir)
+        (cppcm-set-c-flags-current-buffer))
+       ((nth 1 dirs)
+        (message "Please run cmake in %s at first" (nth 1 dirs))
+        )
+       (t
+        (message "Build directory is missing! Create it and run cmake in it.")))
       )))
 
 ;;;###autoload
