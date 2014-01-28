@@ -4,7 +4,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake
-;; Version: 0.4.2
+;; Version: 0.4.3
 
 ;; This file is not part of GNU Emacs.
 
@@ -125,10 +125,19 @@ For example:
     ml
     ))
 
-;; find the first line in CMakeCache.txt and assume it's the root src directory
+;; grep Project_SOURCE_DIR if it exists
+;; if Project_SOURCE_DIR does not exist, grep first what_ever_SOURCE_DIR
+;; the result is assume the root source directory,
 ;; kind of hack
-(defun cppcm-get-source-dir (d)
-    (cppcm-query-var (concat d "CMakeCache.txt") "[[:word:]]+_SOURCE_DIR\:STATIC\=\\(.*\\)"))
+;; Please enlighten me if you have better result
+(defun cppcm-get-root-source-dir (d)
+  (let (rlt)
+    (setq rlt (cppcm-query-var (concat d "CMakeCache.txt") "Project_SOURCE_DIR\:STATIC\=\\(.*\\)"))
+    (if (not rlt)
+        (setq rlt (cppcm-query-var (concat d "CMakeCache.txt") "[[:word:]]+_SOURCE_DIR\:STATIC\=\\(.*\\)"))
+        )
+    rlt
+    ))
 
 (defun cppcm-get-dirs ()
   "search from current directory to the parent to locate build directory
@@ -149,7 +158,7 @@ return (found possible-build-dir build-dir src-dir)"
                     (setq found t)
                     (setq cppcm-build-dir build-dir)
                     )
-                   (t ;not a real build direcotyr,
+                   (t ;not a real build directory,
                     (if (file-exists-p build-dir)
                         (setq possible-build-dir build-dir))
                     ;; keep looking up the parent directory
@@ -157,7 +166,7 @@ return (found possible-build-dir build-dir src-dir)"
                     ))
                   (setq i (+ i 1)))
            (when found
-             (setq src-dir (cppcm-get-source-dir build-dir))
+             (setq src-dir (cppcm-get-root-source-dir build-dir))
              (setq cppcm-src-dir src-dir)
              ))
     (list found possible-build-dir build-dir src-dir)))
@@ -304,7 +313,8 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
         ;; if the target is ${VAR_NAME}, we need query CMakeLists.txt to find actual value
         ;; of the target
         (setq e (cadr tgt))
-        (setq e (if (string= (substring e 0 2) "${") (cppcm-guess-var (substring e 2 -1) cm) e))
+
+        (setq e (if (and (> 1 (length e)) (string= (substring e 0 2) "${"))  (cppcm-guess-var (substring e 2 -1) cm) e))
         (setcar (nthcdr 1 tgt) e)
         (setq mk (concat (file-name-as-directory src-dir) cppcm-makefile-name))
         (cppcm-create-one-makefile root-src-dir build-dir cm tgt mk)
