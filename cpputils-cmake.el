@@ -4,7 +4,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake
-;; Version: 0.4.3
+;; Version: 0.4.4
 
 ;; This file is not part of GNU Emacs.
 
@@ -132,7 +132,7 @@ For example:
 ;; Please enlighten me if you have better result
 (defun cppcm-get-root-source-dir (d)
   (let (rlt)
-    (setq rlt (cppcm-query-var (concat d "CMakeCache.txt") "Project_SOURCE_DIR\:STATIC\=\\(.*\\)"))
+    (setq lt (cppcm-query-var (concat d "CMakeCache.txt") "Project_SOURCE_DIR\:STATIC\=\\(.*\\)"))
     (if (not rlt)
         (setq rlt (cppcm-query-var (concat d "CMakeCache.txt") "[[:word:]]+_SOURCE_DIR\:STATIC\=\\(.*\\)"))
         )
@@ -232,14 +232,8 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
     ))
 
 (defun cppcm-get-exe-dir-path-current-buffer ()
-  (let (cm
-        exe-path
-        )
-    (setq cm (concat (file-name-as-directory (file-name-directory buffer-file-name)) "CMakeLists.txt"))
-
-    (setq exe-path (gethash (concat cm "exe-dir") cppcm-hash))
-    exe-path
-    ))
+  (file-name-directory (cppcm-get-exe-path-current-buffer))
+  (cppcm-get-exe-path-current-buffer))
 
 (defun cppcm-create-one-makefile (root-src-dir build-dir cm tgt mk)
   (let (flag-make
@@ -264,7 +258,6 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
            ))
     ;; try to guess the executable file full path
     (setq exe-full-path (cppcm-guess-exe-full-path exe-dir tgt))
-    (puthash (concat cm "exe-dir") exe-dir cppcm-hash)
 
     (when exe-full-path
       (puthash (concat cm "exe-full-path") exe-full-path cppcm-hash)
@@ -314,7 +307,7 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
         ;; of the target
         (setq e (cadr tgt))
 
-        (setq e (if (and (> 1 (length e)) (string= (substring e 0 2) "${"))  (cppcm-guess-var (substring e 2 -1) cm) e))
+        (setq e (if (and (> (length e) 1) (string= (substring e 0 2) "${"))  (cppcm-guess-var (substring e 2 -1) cm) e))
         (setcar (nthcdr 1 tgt) e)
         (setq mk (concat (file-name-as-directory src-dir) cppcm-makefile-name))
         (cppcm-create-one-makefile root-src-dir build-dir cm tgt mk)
@@ -333,14 +326,36 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
         (cppcm-create-flymake-makefiles root-src-dir subdir build-dir)
         ))))
 
+(defun cppcm--guess-dir-containing-cmakelists-dot-txt ()
+  (let ((i 0)
+        dir
+        found)
+    (setq dir (concat (file-name-as-directory (file-name-directory buffer-file-name))))
+    (while (and (< i cppcm-proj-max-dir-level) (not found) )
+      (cond
+       ((file-exists-p (concat dir "CMakeLists.txt"))
+        (setq found t)
+        )
+       (t
+        ;; keep looking up the parent directory
+        (setq dir (cppcm-parent-dir dir))
+        ))
+      (setq i (+ i 1)))
+    (unless found
+      (setq dir nil))
+    dir))
+
 ;;;###autoload
 (defun cppcm-get-exe-path-current-buffer ()
   (interactive)
-  (let (cm
-        exe-path
-        )
-    (setq cm (concat (file-name-as-directory (file-name-directory buffer-file-name)) "CMakeLists.txt"))
-    (setq exe-path (gethash (concat cm "exe-full-path") cppcm-hash))
+  (let (exe-path
+        dir)
+    (setq dir (cppcm--guess-dir-containing-cmakelists-dot-txt))
+
+    (when dir
+      (setq exe-path (gethash (concat dir "CMakeLists.txt" "exe-full-path") cppcm-hash))
+      )
+
     (if exe-path
         (progn
           (cppcm-share-str exe-path)
@@ -353,19 +368,22 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
 
 (defun cppcm-set-c-flags-current-buffer ()
   (interactive)
-  (let (cm
+  (let (dir
+        cm
         c-compiling-flags-list
         c-flags
         c-defines
         )
-    (setq cm (concat (file-name-as-directory (file-name-directory buffer-file-name)) "CMakeLists.txt"))
+    (setq dir (cppcm--guess-dir-containing-cmakelists-dot-txt))
+    (when dir
+      (setq cm (concat dir "CMakeLists.txt"))
+      (setq c-compiling-flags-list (gethash cm cppcm-hash))
+      (setq c-flags (nth 0 c-compiling-flags-list))
+      (setq c-defines (nth 1 c-compiling-flags-list))
 
-    (setq c-compiling-flags-list (gethash cm cppcm-hash))
-    (setq c-flags (nth 0 c-compiling-flags-list))
-    (setq c-defines (nth 1 c-compiling-flags-list))
-
-    (setq cppcm-include-dirs (if c-flags (split-string c-flags "\s+" t)))
-    (setq cppcm-preprocess-defines (if c-defines (split-string c-defines "\s+" t)))
+      (setq cppcm-include-dirs (if c-flags (split-string c-flags "\s+" t)))
+      (setq cppcm-preprocess-defines (if c-defines (split-string c-defines "\s+" t)))
+      )
     ))
 
 (defun cppcm-compile-in-current-exe-dir ()
