@@ -1,4 +1,4 @@
-* cpputils-cmake.el (current version 0.4.4)
+* cpputils-cmake.el (version 0.4.5)
 cpputils-cmake automatically enable real time syntax check (Flymake) and IntelliSense (auto-complete+auto-complete-clang, company-mode) if you use [[http://www.cmake.org][CMake]].
 
 It does all the configuration dirty job *automatically* for you. So you can use [[http://flymake.sourceforge.net/][Flymake]], [[http://cx4a.org/software/auto-complete/][auto-complete]], [[https://github.com/brianjcj/auto-complete-clang][auto-complete-clang]], [[https://github.com/company-mode/company-mode][company-mode]], [[http://www.emacswiki.org/emacs/CompileCommand][compile]], ff-find-other-file (if you press `C-x C-o` in C/C++ file, ff-find-other-file will open *correct* header file under cursor) with almost no configuration.
@@ -8,17 +8,17 @@ Key points before you continue:
 - easy to use, copy the elisp code from "Set up" section into you ~/.emacs. DONE! Use Emacs as usual and ignore advanced tips in remaining sections.
 - cpputils-cmake will configure many third party plugins *automatically* for you. But it's *NOT* dependent on those plugins. Only CMake is required.
 
-* Install
-** Easy way
+* install
+** easy way
 cpputils-cmake is already uploaded to [[http://marmalade-repo.org/]]. So the best way to install it is using Emacs' package manager.
-** Manual way
+** manual way
 If you don't want to use package manager, you only need download the file cpputils-cmake.el and put it somewhere (say ~/.emacs/lisp), then add below code into your .emacs:
 #+BEGIN_SRC lisp
 (add-to-list 'load-path "~/.emacs.d/lisp/")
 (require 'cpputils-cmake)
 #+END_SRC
 
-* Set up
+* set up
 Copy and paste below code into your .emacs:
 #+BEGIN_SRC elisp
 (add-hook 'c-mode-hook (lambda () (cppcm-reload-all)))
@@ -29,13 +29,14 @@ Copy and paste below code into your .emacs:
 (global-set-key (kbd "C-c C-g")
  '(lambda ()(interactive) (gud-gdb (concat "gdb --fullname " (cppcm-get-exe-path-current-buffer)))))
 #+END_SRC
-* One minute step by step tutorial
-** Create a "hello world" C++ project by running one line shell script
+
+* one minute step by step tutorial
+** one line bash to create "hello" project
 #+BEGIN_SRC sh
 mkdir -p hello/src;printf "#include <stdio.h>\nint main(void) {\nprintf(\"hello world\");\nreturn 0;\n}" > hello/src/main.cpp;printf "cmake_minimum_required(VERSION 2.6)\nadd_executable(main main.cpp)" > hello/src/CMakeLists.txt
 #+END_SRC
 
-** Use cmake as usual
+** use cmake as usual
 Please note you need run "Make" at least once before using cpputils-cmake:
 #+BEGIN_SRC sh
 mkdir hello/build;cd hello/build;cmake ../src;make clean;make
@@ -46,10 +47,12 @@ If you use another directory name like "mybuild" instead of "build", you must ad
 (setq cppcm-build-dirname "mybuild")
 #+END_SRC
 
-** Open main.cpp with Emacs and enable flymake: `M-x flymake-mode`.
+** flymake
+Run "M-x flymake-mode".
+
 Now typing some random code and watch the real time hint on your syntax errors.
 
-** Compile as usual
+** compile
 Compile the program: `M-x compile`
 
 You can see the default command line displayed in minibuffer is `make -C ~/your-projects-blah-blah/hello/build`
@@ -57,24 +60,24 @@ You can see the default command line displayed in minibuffer is `make -C ~/your-
 BTW, you can also run the command `M-x cppcm-compile` to compile the current excutable only.
 
 You can see the actual command displayed in minibuffer is `make -C ~/your-project-blah-blah/hello/build/sub-project-dir-if-your-are-editing-its-cpp-file`
-** Start gdb
+** start gdb
 Press hot key `C-c C-g` (suppose you've copied my configuration from previous section).
 
 You can see the gud-gdb starts and the executable "~/your-projects-blah-blah/hello/build/main" is loaded automatically.
 
-** If you've installed auto-complete and auto-complete-clang (OPTIONAL)
+** auto-complete & auto-complete-clang (OPTIONAL)
 Use them as usual. You can see that the Intellisense/auto-complete is more precise.
 
-** If you've installed company-mode (OPTIONAL)
+** company-mode (OPTIONAL)
 Use them as usual. You can see that the Intellisense/auto-complete is more precise.
 
-** Open included C/C++ header file
+** open header file
 Press the hot key `C-x C-o` or `M-x ff-find-other-file`. The corresponding header file is opened correctly.
 
 This is the default feature of Emacs. What cpputils-cmake does is set up the directories of those header files for you automatically so that the header files could be found by Emacs.
 
-* Tips (OPTIONAL)
-** How to get the target's full path
+* tips
+** get full path of target
 The command "cppcm-get-exe-path-current-buffer" will copy the current executable into the kill ring and OS clipboard.
 
 You need install `xsel` under Linux to support OS clipboard.
@@ -83,7 +86,7 @@ This could be very useful if you want to access the directory of the executable 
 
 You can yank (paste) the full path to the eshell or minibuffer and press "M-backspace" to get the directory name.
 
-** How to reload cpputils-cmake
+** reload cpputils-cmake
 You can always `M-x cppcm-reload-all` any time.
 
 There is also `cppcm-reload-all-hook` which will be called after `cppcm-reload-all`. This give you a chance to tweak or override the set up.
@@ -95,11 +98,21 @@ Here is the list of global variables third party plugins will use (and you can t
 | company-clang-arguments | company-mode        |
 | cc-search-directories   | ff-find-other-file  |
 Currently `auto-complete-clang` use global variable `ac-clang-flags`. `company-mode` use `company-clang-arguments`.
-* Contact me
+
+** compile only current target
+"M-x cppcm-compile".
+
+Please press "C-h v cppcm-compile-list" for other compile options.
+
+** make clean && make
+"M-x cppcm-recompile"
+
+* contact me
 You can report bugs at [[https://github.com/redguardtoo/cpputils-cmake]]. My email is <chenbin DOT sh AT gmail>.
 
 Please use github issue tracker instead of email me directly if you want my response ASAP. It's because github will email me any issue you submit. The github email will be put into my "IMPORTANT" folder automatically. But regular email in my "INBOX" folder will be mixed with spams. I got lots of spams these days.
-* License
+
+* license
 Copyright (C) 2012 Chen Bin
 
 Author: Chen Bin <chenbin DOT sh AT gmail DOT com> Keywords: flymake IntelliSense cmake

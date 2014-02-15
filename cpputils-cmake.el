@@ -4,7 +4,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake
-;; Version: 0.4.4
+;; Version: 0.4.5
 
 ;; This file is not part of GNU Emacs.
 
@@ -433,6 +433,18 @@ by customize `cppcm-compile-list'."
     (let ((index (round (log prefix 4))))
       (call-interactively (nth index cppcm-compile-list))
       )))
+
+;;;###autoload
+(defun cppcm-recompile ()
+  "make clean;compile"
+  (interactive)
+  (let (previous-compile-command
+        recompile-command)
+    (setq previous-compile-command compile-command)
+    (setq recompile-command (concat compile-command " clean;" compile-command))
+    (compile recompile-command)
+    (setq compile-command previous-compile-command)
+    ))
 
 ;;;###autoload
 (defun cppcm-reload-all ()
