@@ -89,7 +89,7 @@ For example:
 ;; get all the possible targets
 (defun cppcm-query-targets (f)
   (let ((vars ())
-        (re "\\(add_executable\\|add_library\\)\s*(\\([^\s]+\\)")
+        (re "^\s*[^#]*\s*\\(add_executable\\|add_library\\)\s*(\\([^\s]+\\)")
         lines)
     (setq lines (cppcm-readlines f))
     (dolist (l lines)
@@ -103,7 +103,7 @@ For example:
 ;; @return matched line, use (match-string 2 line) to get results
 (defun cppcm-match-all-lines (f)
   (let ((vars ())
-        (re "\\(add_executable|add_library\\)\s*(\\([^\s]+\\)")
+        (re "^\s*[^#]*\s*\\(add_executable|add_library\\)\s*(\\([^\s]+\\)")
         lines)
     (setq lines (cppcm-readlines f))
     (catch 'brk
