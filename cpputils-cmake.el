@@ -34,7 +34,9 @@
 
 (defvar cppcm-hash (make-hash-table :test 'equal))
 (defconst cppcm-prog "cpputils-cmake")
-(defconst cppcm-makefile-name "Makefile")
+(defcustom cppcm-makefile-name "Makefile" "The filename for cppcm makefiles"
+  :type 'string
+  :group 'cpputils-cmake)
 
 (defvar cppcm-compile-list
   '(cppcm-compile-in-current-exe-dir
