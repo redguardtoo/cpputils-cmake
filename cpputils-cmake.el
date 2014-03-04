@@ -94,7 +94,8 @@ For example:
       (when (string-match re l)
         (push (match-string 1 l) vlist)
         ))
-    (if vlist (car vlist))
+    ;; Select the top-level directory assuming it is the one with shorter path
+    (if vlist (car (sort vlist #'string-lessp)))
     ))
 
 ;; get all the possible targets
@@ -147,8 +148,7 @@ For example:
   (let (rlt)
     (setq lt (cppcm-query-var-from-last-matched-line (concat d "CMakeCache.txt") "Project_SOURCE_DIR\:STATIC\=\\(.*\\)"))
     (if (not rlt)
-        (setq rlt (cppcm-query-var-from-last-matched-line (concat d "CMakeCache.txt") "[[:word:]]+_SOURCE_DIR\:STATIC\=\\(.*\\)"))
-        )
+        (setq rlt (cppcm-query-var-from-last-matched-line (concat d "CMakeCache.txt") "[[:word:]]+_SOURCE_DIR\:STATIC\=\\(.*\\)")))
     rlt
     ))
 
