@@ -1,4 +1,4 @@
-* cpputils-cmake.el (version 0.4.5)
+* cpputils-cmake.el (version 0.4.6)
 cpputils-cmake automatically enable real time syntax check (Flymake) and IntelliSense (auto-complete+auto-complete-clang, company-mode) if you use [[http://www.cmake.org][CMake]].
 
 It does all the configuration dirty job *automatically* for you. So you can use [[http://flymake.sourceforge.net/][Flymake]], [[http://cx4a.org/software/auto-complete/][auto-complete]], [[https://github.com/brianjcj/auto-complete-clang][auto-complete-clang]], [[https://github.com/company-mode/company-mode][company-mode]], [[http://www.emacswiki.org/emacs/CompileCommand][compile]], ff-find-other-file (if you press `C-x C-o` in C/C++ file, ff-find-other-file will open *correct* header file under cursor) with almost no configuration.
@@ -8,7 +8,7 @@ Key points before you continue:
 - easy to use, copy the elisp code from "Set up" section into you ~/.emacs. DONE! Use Emacs as usual and ignore advanced tips in remaining sections.
 - cpputils-cmake will configure many third party plugins *automatically* for you. But it's *NOT* dependent on those plugins. Only CMake is required.
 
-* install
+* Install
 ** easy way
 cpputils-cmake is already uploaded to [[http://marmalade-repo.org/]]. So the best way to install it is using Emacs' package manager.
 ** manual way
@@ -18,7 +18,7 @@ If you don't want to use package manager, you only need download the file cpputi
 (require 'cpputils-cmake)
 #+END_SRC
 
-* set up
+* Set up
 Copy and paste below code into your .emacs:
 #+BEGIN_SRC elisp
 (add-hook 'c-mode-hook (lambda () (cppcm-reload-all)))
@@ -30,7 +30,7 @@ Copy and paste below code into your .emacs:
  '(lambda ()(interactive) (gud-gdb (concat "gdb --fullname " (cppcm-get-exe-path-current-buffer)))))
 #+END_SRC
 
-* one minute step by step tutorial
+* One minute step by step tutorial
 ** one line bash to create "hello" project
 #+BEGIN_SRC sh
 mkdir -p hello/src;printf "#include <stdio.h>\nint main(void) {\nprintf(\"hello world\");\nreturn 0;\n}" > hello/src/main.cpp;printf "cmake_minimum_required(VERSION 2.6)\nadd_executable(main main.cpp)" > hello/src/CMakeLists.txt
@@ -76,7 +76,7 @@ Press the hot key `C-x C-o` or `M-x ff-find-other-file`. The corresponding heade
 
 This is the default feature of Emacs. What cpputils-cmake does is set up the directories of those header files for you automatically so that the header files could be found by Emacs.
 
-* tips
+* Tips
 ** get full path of target
 The command "cppcm-get-exe-path-current-buffer" will copy the current executable into the kill ring and OS clipboard.
 
@@ -107,12 +107,16 @@ Please press "C-h v cppcm-compile-list" for other compile options.
 ** make clean && make
 "M-x cppcm-recompile"
 
-* contact me
+* Credits
+- [[https://github.com/dojeda][David Ojeda (AKA dojeda)]] developed the algorithm to locate the top level project.
+- [[https://github.com/erreina][Ernesto Rodriguez Reina (AKA erreina)]] added the command "cppcm-recompile".
+
+* Contact me
 You can report bugs at [[https://github.com/redguardtoo/cpputils-cmake]]. My email is <chenbin DOT sh AT gmail>.
 
 Please use github issue tracker instead of email me directly if you want my response ASAP. It's because github will email me any issue you submit. The github email will be put into my "IMPORTANT" folder automatically. But regular email in my "INBOX" folder will be mixed with spams. I got lots of spams these days.
 
-* license
+* License
 Copyright (C) 2012 Chen Bin
 
 Author: Chen Bin <chenbin DOT sh AT gmail DOT com> Keywords: flymake IntelliSense cmake
