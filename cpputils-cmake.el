@@ -4,7 +4,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake
-;; Version: 0.4.6
+;; Version: 0.4.7
 
 ;; This file is not part of GNU Emacs.
 
@@ -26,6 +26,8 @@
   "hook after cppcm-reload-all is called. You can modify the global variables set up by cppcm-reload-all"
   :type 'hook
   :group 'cpputils-cmake)
+
+(defvar cppcm-extra-preprocss-flags-from-user nil "Value example: (\"-I/usr/src/include\" \"-I./inc\" \"-DNDEBUG\").")
 
 (defvar cppcm-build-dir nil "The full path of build directory")
 (defvar cppcm-src-dir nil "The full path of root source directory")
@@ -297,7 +299,9 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
                           is-c
                           "_FLAGS} ${"
                           is-c
-                          "_DEFINES} -S ${CHK_SOURCES}"
+                          "_DEFINES} "
+                          (mapconcat 'identity cppcm-extra-preprocss-flags-from-user " ")
+                          " -S ${CHK_SOURCES}"
                           )))))
     ))
 
@@ -466,8 +470,8 @@ by customize `cppcm-compile-list'."
   (cppcm-create-or-update-flymake-files)
   (when cppcm-include-dirs
     ;; for auto-complete-clang
-    (setq ac-clang-flags (append cppcm-include-dirs cppcm-preprocess-defines))
-    (setq company-clang-arguments (append cppcm-include-dirs cppcm-preprocess-defines))
+    (setq ac-clang-flags (append cppcm-include-dirs cppcm-preprocess-defines cppcm-extra-preprocss-flags-from-user))
+    (setq company-clang-arguments (append cppcm-include-dirs cppcm-preprocess-defines cppcm-extra-preprocss-flags-from-user))
     ;; set cc-search-directories automatically, so ff-find-other-file will succeed
     (add-hook 'ff-pre-find-hook
               '(lambda ()
