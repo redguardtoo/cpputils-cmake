@@ -48,6 +48,10 @@
   "^\\(add_executable\\)$"
   "Regex for matching a CMake target definition")
 
+(defcustom cppcm-write-flymake-makefile t "Toggle cpputils-cmake writing Flymake Makefiles"
+  :type 'boolean
+  :group 'cpputils-cmake)
+
 (defvar cppcm-compile-list
   '(cppcm-compile-in-current-exe-dir
     compile
@@ -333,7 +337,8 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
         (setq e (if (and (> (length e) 1) (string= (substring e 0 2) "${"))  (cppcm-guess-var (substring e 2 -1) cm) e))
         (setcar (nthcdr 1 tgt) e)
         (setq mk (concat (file-name-as-directory src-dir) cppcm-makefile-name))
-        (cppcm-create-one-makefile root-src-dir build-dir cm tgt mk)
+        (when cppcm-write-flymake-makefile
+	  (cppcm-create-one-makefile root-src-dir build-dir cm tgt mk))
         )
       )
     (dolist (f (directory-files base))
