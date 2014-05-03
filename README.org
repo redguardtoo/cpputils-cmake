@@ -1,7 +1,7 @@
-* cpputils-cmake.el (version 0.4.7)
+* cpputils-cmake.el (version 0.4.8)
 cpputils-cmake automatically enable real time syntax check (Flymake) and IntelliSense (auto-complete+auto-complete-clang, company-mode) if you use [[http://www.cmake.org][CMake]].
 
-It does all the configuration dirty job *automatically* for you. So you can use [[http://flymake.sourceforge.net/][Flymake]], [[http://cx4a.org/software/auto-complete/][auto-complete]], [[https://github.com/brianjcj/auto-complete-clang][auto-complete-clang]], [[https://github.com/company-mode/company-mode][company-mode]], [[http://www.emacswiki.org/emacs/CompileCommand][compile]], ff-find-other-file (if you press `C-x C-o` in C/C++ file, ff-find-other-file will open *correct* header file under cursor) with almost no configuration.
+It does all the configuration dirty job *automatically* for you. So you can use [[http://flymake.sourceforge.net/][Flymake]], [[https://github.com/flycheck/flycheck][Flycheck]], [[http://cx4a.org/software/auto-complete/][auto-complete]], [[https://github.com/brianjcj/auto-complete-clang][auto-complete-clang]], [[https://github.com/company-mode/company-mode][company-mode]], [[http://www.emacswiki.org/emacs/CompileCommand][compile]], ff-find-other-file (if you press `C-x C-o` in C/C++ file, ff-find-other-file will open *correct* header file under cursor) with almost no configuration.
 
 Key points before you continue:
 - It's lightweight.
@@ -56,7 +56,8 @@ If you use another directory name like "mybuild" instead of "build", you must ad
 Run "M-x flymake-mode".
 
 Now typing some random code and watch the real time hint on your syntax errors.
-
+** flycheck
+See [[https://github.com/flycheck/flycheck]] for flycheck setup. No set up needed here.
 ** compile
 Compile the program: `M-x compile`
 
@@ -115,6 +116,7 @@ Please press "C-h v cppcm-compile-list" for other compile options.
 * Credits
 - [[https://github.com/dojeda][David Ojeda (AKA dojeda)]] developed the algorithm to locate the top level project.
 - [[https://github.com/erreina][Ernesto Rodriguez Reina (AKA erreina)]] added the command "cppcm-recompile".
+- [[http://chachi.github.io/][Jack Morrison (AKA chachi)]] added support for [[https://github.com/flycheck/flycheck][Flycheck]]
 
 * Contact me
 You can report bugs at [[https://github.com/redguardtoo/cpputils-cmake]]. My email is <chenbin DOT sh AT gmail>.

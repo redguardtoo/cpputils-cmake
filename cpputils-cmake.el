@@ -4,7 +4,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake Flycheck
-;; Version: 0.4.7
+;; Version: 0.4.8
 
 ;; This file is not part of GNU Emacs.
 
@@ -483,19 +483,21 @@ by customize `cppcm-compile-list'."
     ;; for auto-complete-clang
     (setq ac-clang-flags (append cppcm-include-dirs cppcm-preprocess-defines cppcm-extra-preprocss-flags-from-user))
     (setq company-clang-arguments (append cppcm-include-dirs cppcm-preprocess-defines cppcm-extra-preprocss-flags-from-user))
-    (setq flycheck-clang-include-path (mapcar (lambda (str)
-						(replace-regexp-in-string "^-I" "" str))
-					      cppcm-include-dirs))
+    (setq flycheck-clang-include-path (delq nil
+                                            (mapcar (lambda (str)
+                                                      (replace-regexp-in-string "^-I" "" str))
+                                                    ac-clang-flags)))
     ;; set cc-search-directories automatically, so ff-find-other-file will succeed
     (add-hook 'ff-pre-find-hook
               '(lambda ()
-                 (setq inc-dirs (mapcar (lambda (item)
-                                          (when (string-match "^-I[ \t]*" item) (replace-match "" nil nil item)))
-                                        cppcm-include-dirs))
-                 ;; append the directories into the cc-search-directories
-                 ;; please note add-to-list won't insert duplicated items
-                 (dolist (x inc-dirs) (add-to-list 'cc-search-directories x))
-                 )))
+                 (let (inc-dirs)
+                   (setq inc-dirs (mapcar (lambda (item)
+                                            (when (string-match "^-I[ \t]*" item) (replace-match "" nil nil item)))
+                                          cppcm-include-dirs))
+                   ;; append the directories into the cc-search-directories
+                   ;; please note add-to-list won't insert duplicated items
+                   (dolist (x inc-dirs) (add-to-list 'cc-search-directories x))
+                   ))))
   (when (and cppcm-build-dir (file-exists-p (concat cppcm-build-dir "CMakeCache.txt")))
     (setq compile-command (concat "make -C " cppcm-build-dir))
     )

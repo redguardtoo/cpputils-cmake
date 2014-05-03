@@ -1,5 +1,6 @@
 ### /Users/cb/.gitignore-boilerplates/Global/Emacs.gitignore
-
+build/
+Makefile
 *~
 \#*\#
 /.emacs.desktop
