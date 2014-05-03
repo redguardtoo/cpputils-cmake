@@ -3,7 +3,7 @@
 ;; Copyright (C) 2012 Chen Bin
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
-;; Keywords: CMake IntelliSense Flymake
+;; Keywords: CMake IntelliSense Flymake Flycheck
 ;; Version: 0.4.7
 
 ;; This file is not part of GNU Emacs.
@@ -38,6 +38,18 @@
 (defconst cppcm-prog "cpputils-cmake")
 (defcustom cppcm-makefile-name "Makefile" "The filename for cppcm makefiles"
   :type 'string
+  :group 'cpputils-cmake)
+
+(defvar cppcm-cmake-target-regex
+  "^\s*[^#]*\s*\\(add_\\(?:executable\\|library\\)\\)\s*(\\([^\s]+\\)"
+  "Regex for matching a CMake target definition")
+
+(defvar cppcm-cmake-exe-regex
+  "^\\(add_executable\\)$"
+  "Regex for matching a CMake target definition")
+
+(defcustom cppcm-write-flymake-makefile t "Toggle cpputils-cmake writing Flymake Makefiles"
+  :type 'boolean
   :group 'cpputils-cmake)
 
 (defvar cppcm-compile-list
@@ -103,11 +115,10 @@ For example:
 ;; get all the possible targets
 (defun cppcm-query-targets (f)
   (let ((vars ())
-        (re "^\s*[^#]*\s*\\(add_executable\\|add_library\\)\s*(\\([^\s]+\\)")
         lines)
     (setq lines (cppcm-readlines f))
     (dolist (l lines)
-      (when (string-match re l)
+      (when (string-match cppcm-cmake-target-regex l)
         (push (list (downcase (match-string 1 l)) (match-string 2 l)) vars)
         ))
     vars
@@ -117,12 +128,11 @@ For example:
 ;; @return matched line, use (match-string 2 line) to get results
 (defun cppcm-match-all-lines (f)
   (let ((vars ())
-        (re "^\s*[^#]*\s*\\(add_executable|add_library\\)\s*(\\([^\s]+\\)")
         lines)
     (setq lines (cppcm-readlines f))
     (catch 'brk
       (dolist (l lines)
-        (when (string-match re l)
+        (when (string-match cppcm-cmake-target-regex l)
           (push l vars)
           )))
     vars
@@ -227,7 +237,7 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
         (type (car tgt))
         (e (cadr tgt))
         )
-    (if (string= type "add_executable")
+    (if (string-match cppcm-cmake-exe-regex type)
         (progn
           ;; application bundle on OS X?
           (setq p (concat exe-dir e (if (eq system-type 'darwin) (concat ".app/Contents/MacOS/" e))))
@@ -327,7 +337,8 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
         (setq e (if (and (> (length e) 1) (string= (substring e 0 2) "${"))  (cppcm-guess-var (substring e 2 -1) cm) e))
         (setcar (nthcdr 1 tgt) e)
         (setq mk (concat (file-name-as-directory src-dir) cppcm-makefile-name))
-        (cppcm-create-one-makefile root-src-dir build-dir cm tgt mk)
+        (when cppcm-write-flymake-makefile
+	  (cppcm-create-one-makefile root-src-dir build-dir cm tgt mk))
         )
       )
     (dolist (f (directory-files base))
@@ -472,6 +483,9 @@ by customize `cppcm-compile-list'."
     ;; for auto-complete-clang
     (setq ac-clang-flags (append cppcm-include-dirs cppcm-preprocess-defines cppcm-extra-preprocss-flags-from-user))
     (setq company-clang-arguments (append cppcm-include-dirs cppcm-preprocess-defines cppcm-extra-preprocss-flags-from-user))
+    (setq flycheck-clang-include-path (mapcar (lambda (str)
+						(replace-regexp-in-string "^-I" "" str))
+					      cppcm-include-dirs))
     ;; set cc-search-directories automatically, so ff-find-other-file will succeed
     (add-hook 'ff-pre-find-hook
               '(lambda ()
