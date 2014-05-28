@@ -26,8 +26,11 @@ If you don't want to use package manager, you only need download the file cpputi
 * Set up
 Copy and paste below code into your .emacs:
 #+BEGIN_SRC elisp
-(add-hook 'c-mode-hook (lambda () (cppcm-reload-all)))
-(add-hook 'c++-mode-hook (lambda () (cppcm-reload-all)))
+(add-hook 'c-mode-common-hook
+          (lambda ()
+            (if (derived-mode-p 'c-mode 'c++-mode)
+                (cppcm-reload-all)
+              )))
 ;; OPTIONAL, somebody reported that they can use this package with Fortran
 (add-hook 'c90-mode-hook (lambda () (cppcm-reload-all)))
 ;; OPTIONAL, avoid typing full path when starting gdb
@@ -85,6 +88,17 @@ Press the hot key `C-x C-o` or `M-x ff-find-other-file`. The corresponding heade
 This is the default feature of Emacs. What cpputils-cmake does is set up the directories of those header files for you automatically so that the header files could be found by Emacs.
 
 * Tips
+** avoid scanning when opening system header files
+cpputils-cmake scanning is light weight enough so below code is *optional*:
+#+BEGIN_SRC elisp
+(add-hook 'c-mode-common-hook
+          (lambda ()
+            (if (derived-mode-p 'c-mode 'c++-mode)
+                (if  (not (or (string-match "^/usr/local/include/.*" buffer-file-name)
+                              (string-match "^/usr/src/linux/include/.*" buffer-file-name)))
+                    (cppcm-reload-all))
+              )))
+#+END_SRC
 ** get full path of target
 The command "cppcm-get-exe-path-current-buffer" will copy the current executable into the kill ring and OS clipboard.
 
