@@ -10,7 +10,7 @@ Key points before you continue:
 
 * Install
 ** easy way
-cpputils-cmake is available both at [[http://marmalade-repo.org/]] and [[https://github.com/milkypostman/melpa]].
+cpputils-cmake is available at [[https://github.com/milkypostman/melpa]].
 
 So the best way to install is using Emacs' package manager.
 
