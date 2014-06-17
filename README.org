@@ -58,9 +58,9 @@ If you use another directory name like "mybuild" instead of "build", you must ad
 #+END_SRC
 
 ** flymake
-Run "M-x flymake-mode".
+Open C++ file. Run "M-x flymake-mode". Please note all commands are availble *ONLY when you editing/debugging C/C++ code!*
 
-Now typing some random code and watch the real time hint on your syntax errors.
+Now typing some random C++ code and watch the real time hint on your syntax errors.
 ** flycheck
 See [[https://github.com/flycheck/flycheck]] for flycheck setup. No set up needed here.
 ** compile
