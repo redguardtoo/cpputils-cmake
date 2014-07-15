@@ -4,7 +4,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake Flycheck
-;; Version: 0.4.8
+;; Version: 0.4.9
 
 ;; This file is not part of GNU Emacs.
 
@@ -451,6 +451,11 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
       )))
 
 ;;;###autoload
+(defun cppcm-version ()
+  (interactive)
+  (message "0.4.9"))
+
+;;;###autoload
 (defun cppcm-compile (&optional prefix)
   "compile the executable/library in current directory,
 default compile command or compile in the build directory.
@@ -483,9 +488,15 @@ by customize `cppcm-compile-list'."
     ;; for auto-complete-clang
     (setq ac-clang-flags (append cppcm-include-dirs cppcm-preprocess-defines cppcm-extra-preprocss-flags-from-user))
     (setq company-clang-arguments (append cppcm-include-dirs cppcm-preprocess-defines cppcm-extra-preprocss-flags-from-user))
+    ;; unlike auto-complete and company-mode, flycheck prefer make things complicated
     (setq flycheck-clang-include-path (delq nil
                                             (mapcar (lambda (str)
-                                                      (replace-regexp-in-string "^-I" "" str))
+						      (if (string-match "^-I *" str) (replace-regexp-in-string "^-I *" "" str)))
+                                                    ac-clang-flags)))
+
+    (setq flycheck-clang-definitions (delq nil
+                                            (mapcar (lambda (str)
+						      (if (string-match "^-D *" str) (replace-regexp-in-string "^-D *" "" str)))
                                                     ac-clang-flags)))
     ;; set cc-search-directories automatically, so ff-find-other-file will succeed
     (add-hook 'ff-pre-find-hook
