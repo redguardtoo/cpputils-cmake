@@ -41,6 +41,8 @@ Copy and paste below code into your .emacs:
 #+END_SRC
 
 * One minute step by step tutorial
+Please note you need make sure CMakeLists.txt is at the same level with c/cpp files. This limitation will be removed in next version.
+
 ** one line bash to create "hello" project
 #+BEGIN_SRC sh
 mkdir -p hello/src;printf "#include <stdio.h>\nint main(void) {\nprintf(\"hello world\");\nreturn 0;\n}" > hello/src/main.cpp;printf "cmake_minimum_required(VERSION 2.6)\nadd_executable(main main.cpp)" > hello/src/CMakeLists.txt
