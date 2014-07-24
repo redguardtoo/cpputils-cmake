@@ -1,4 +1,4 @@
-* cpputils-cmake.el (version 0.4.9)
+* cpputils-cmake.el (version 0.4.10)
 cpputils-cmake automatically enable real time syntax check (Flymake) and IntelliSense (auto-complete+auto-complete-clang, company-mode) if you use [[http://www.cmake.org][CMake]].
 
 It does all the configuration dirty job *automatically* for you. So you can use [[http://flymake.sourceforge.net/][Flymake]], [[https://github.com/flycheck/flycheck][Flycheck]], [[http://cx4a.org/software/auto-complete/][auto-complete]], [[https://github.com/brianjcj/auto-complete-clang][auto-complete-clang]], [[https://github.com/company-mode/company-mode][company-mode]], [[http://www.emacswiki.org/emacs/CompileCommand][compile]], ff-find-other-file (if you press `C-x C-o` in C/C++ file, ff-find-other-file will open *correct* header file under cursor) with almost no configuration.
@@ -40,9 +40,18 @@ Copy and paste below code into your .emacs:
 (setq cppcm-extra-preprocss-flags-from-user '("-I/usr/src/linux/include" "-DNDEBUG"))
 #+END_SRC
 
-* One minute step by step tutorial
-Please note you need make sure CMakeLists.txt is at the same level with c/cpp files. This limitation will be removed in next version.
+*WARNING*:
+cpputils-cmake assumes that in CMakeLists.txt contains a rule to create target/executable which can be process by regular expression.
 
+The rule is either "add_executable" or "add_library". You can use "include" some common.cmake in CMakeLists.txt. But don't put "add_executable" or "add_library" into common.cmake because cpputils-cmake won't read any included *.cmake.
+
+Here is a sample CMakeLists.txt:
+#+BEGIN_SRC cmake
+set(TGT "main")
+add_executable(${TGT} ${SOURCES})
+#+END_SRC
+
+* One minute step by step tutorial
 ** one line bash to create "hello" project
 #+BEGIN_SRC sh
 mkdir -p hello/src;printf "#include <stdio.h>\nint main(void) {\nprintf(\"hello world\");\nreturn 0;\n}" > hello/src/main.cpp;printf "cmake_minimum_required(VERSION 2.6)\nadd_executable(main main.cpp)" > hello/src/CMakeLists.txt
@@ -60,9 +69,14 @@ If you use another directory name like "mybuild" instead of "build", you must ad
 #+END_SRC
 
 ** flymake
-Open C++ file. Run "M-x flymake-mode". Please note all commands are availble *ONLY when you editing/debugging C/C++ code!*
+Open C++ file. Run "M-x flymake-mode". Please note all commands are available *ONLY when you editing/debugging C/C++ code!*
 
 Now typing some random C++ code and watch the real time hint on your syntax errors.
+
+If you don't want to use flymake, you can tell cpputils-cmake NOT to create Makefile for flyemake by inserting below code into ~/.emacs:
+#+BEGIN_SRC elisp
+(setq cppcm-write-flymake-makefile nil)
+#+END_SRC
 ** flycheck
 See [[https://github.com/flycheck/flycheck]] for flycheck setup. No set up needed here.
 ** compile
@@ -135,12 +149,18 @@ Please press "C-h v cppcm-compile-list" for other compile options.
 - [[https://github.com/dojeda][David Ojeda (AKA dojeda)]] developed the algorithm to locate the top level project.
 - [[https://github.com/erreina][Ernesto Rodriguez Reina (AKA erreina)]] added the command "cppcm-recompile".
 - [[http://chachi.github.io/][Jack Morrison (AKA chachi)]] added support for [[https://github.com/flycheck/flycheck][Flycheck]]
+* Bug Report
+Check [[https://github.com/redguardtoo/cpputils-cmake]].
 
-* Contact me
-You can report bugs at [[https://github.com/redguardtoo/cpputils-cmake]]. My email is <chenbin DOT sh AT gmail>.
+Here is the steps to send bug report:
+- open cpp file in your real project
+- `M-x eval-expression`
+- paste (setq cppcm-debug t) into mini-buffer and press ENTER
+- `M-x cppcm-reload-all` and send me the output in Message buffer
+- `C-h v cppcm-hash` and send me the output
+- `M-x cppcm-version` and send the output
 
-Please use github issue tracker instead of email me directly if you want my response ASAP. It's because github will email me any issue you submit. The github email will be put into my "IMPORTANT" folder automatically. But regular email in my "INBOX" folder will be mixed with spams. I got lots of spams these days.
-
+Besides, I still need general environment information.
 * License
 Copyright (C) 2012 Chen Bin
 

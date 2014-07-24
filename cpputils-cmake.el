@@ -1,10 +1,10 @@
 ;;; cpputils-cmake.el --- Easy real time C++ syntax check and IntelliSense if you use CMake.
 
-;; Copyright (C) 2012 Chen Bin
+;; Copyright (C) 2014 Chen Bin
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake Flycheck
-;; Version: 0.4.9
+;; Version: 0.4.10
 
 ;; This file is not part of GNU Emacs.
 
@@ -14,6 +14,10 @@
 ;; See README.org which is distributed with this file
 
 ;;; Code:
+
+;; The basic algorithm is simple:
+;; 1. Find the CMakeLists.txt from current directory.
+;; 2. Extract information from it and fill in cppcm-hash
 (defcustom cppcm-proj-max-dir-level 16 "maximum level of the project directory tree"
   :type 'number
   :group 'cpputils-cmake)
@@ -31,7 +35,7 @@
 
 (defvar cppcm-build-dir nil "The full path of build directory")
 (defvar cppcm-src-dir nil "The full path of root source directory")
-(defvar cppcm-include-dirs nil "Value example: (\"-I/usr/src/include\" \"-I./inc\")")
+(defvar cppcm-include-dirs nil "Value example: (\"-I/usr/src/include\")")
 (defvar cppcm-preprocess-defines nil "Value example: (\"-DNDEBUG\" \"-D_WXGTK_\")")
 
 (defvar cppcm-hash (make-hash-table :test 'equal))
@@ -69,6 +73,22 @@ For example:
 'C-u M-x cppcm-compile'     => `compile'
 'C-u C-u M-x cppcm-compile' => `cppcm-compile-in-root-build-dir'.
 ")
+
+(defvar cppcm-debug nil "enable debug mode")
+
+(defun cppcm--cmakelists-dot-txt (dir)
+  (concat (file-name-as-directory dir) "CMakeLists.txt"))
+
+(defun cppcm--exe-hashkey (dir)
+  (let (k)
+    (setq k (concat (file-name-as-directory dir) "exe-full-path"))
+    k))
+
+(defun cppcm--flags-hashkey (dir)
+  (let (k)
+    (setq k (concat (file-name-as-directory dir) "cpp-flags"))
+    k))
+
 (defun cppcm-share-str (msg)
   (kill-new msg)
   (with-temp-buffer
@@ -80,10 +100,10 @@ For example:
                               (t "xsel -ib")
                               ))))
 
-(defun cppcm-readlines (fPath)
-    "Return a list of lines of a file at fPath."
+(defun cppcm-readlines (FILE)
+    "Return a list of lines of a file at FILE."
       (with-temp-buffer
-            (insert-file-contents fPath)
+            (insert-file-contents FILE)
                 (split-string (buffer-string) "\n" t)))
 
 (defun cppcm-parent-dir (d) (file-name-directory (directory-file-name d)))
@@ -105,7 +125,7 @@ For example:
   (let (vlist lines)
     (setq lines (cppcm-readlines f))
     (dolist (l lines)
-      (when (string-match re l)
+      (if (string-match re l)
         (push (match-string 1 l) vlist)
         ))
     ;; Select the top-level directory assuming it is the one with shorter path
@@ -118,7 +138,7 @@ For example:
         lines)
     (setq lines (cppcm-readlines f))
     (dolist (l lines)
-      (when (string-match cppcm-cmake-target-regex l)
+      (if (string-match cppcm-cmake-target-regex l)
         (push (list (downcase (match-string 1 l)) (match-string 2 l)) vars)
         ))
     vars
@@ -132,7 +152,7 @@ For example:
     (setq lines (cppcm-readlines f))
     (catch 'brk
       (dolist (l lines)
-        (when (string-match cppcm-cmake-target-regex l)
+        (if (string-match cppcm-cmake-target-regex l)
           (push l vars)
           )))
     vars
@@ -234,9 +254,18 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
 ;; @return full path of executable and we are sure it exists
 (defun cppcm-guess-exe-full-path (exe-dir tgt)
   (let (p
+        base-exe-name
         (type (car tgt))
-        (e (cadr tgt))
-        )
+        (e (cadr tgt)))
+
+    (setq base-exe-name (concat exe-dir "lib" e))
+    (when cppcm-debug
+      (message "cppcm-guess-exe-full-path: tgt=%s" tgt)
+      (message "cppcm-guess-exe-full-path: exe-dir=%s" exe-dir)
+      (message "cppcm-guess-exe-full-path: cppcm-cmake-exe-regex=%s" cppcm-cmake-exe-regex)
+      (message "cppcm-guess-exe-full-path: base-exe-name=%s" base-exe-name)
+      )
+
     (if (string-match cppcm-cmake-exe-regex type)
         (progn
           ;; application bundle on OS X?
@@ -245,14 +274,22 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
           (if (not (file-exists-p p)) (setq p (concat exe-dir e)))
           (if (not (file-exists-p p)) (setq p nil))
           )
-      (if (file-exists-p (concat exe-dir "lib" e ".a"))
-          (setq p (concat exe-dir "lib" e ".a"))
-        (if (file-exists-p (concat exe-dir "lib" e ".so"))
-            (setq p (concat exe-dir "lib" e ".so"))
-          (if (file-exists-p (concat exe-dir "lib" e ".dylib"))
-              (setq p (concat exe-dir "lib" e ".dylib"))
-            (setq p nil)
-            ))))
+
+
+      (cond
+       ((file-exists-p (concat base-exe-name ".a"))
+        (setq p (concat base-exe-name ".a")))
+
+       ((file-exists-p (concat base-exe-name ".so"))
+        (setq p (concat base-exe-name ".so")))
+
+       ((file-exists-p (concat base-exe-name ".dylib"))
+        (setq p (concat base-exe-name ".dylib")))
+
+       (t (setq p nil))
+       )
+      )
+    (if cppcm-debug (message "cppcm-guess-exe-full-path: p=%s" p))
     p
     ))
 
@@ -260,8 +297,13 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
   (file-name-directory (cppcm-get-exe-path-current-buffer))
   (cppcm-get-exe-path-current-buffer))
 
-(defun cppcm-create-one-makefile (root-src-dir build-dir cm tgt mk)
+(defun cppcm-handle-one-executable (root-src-dir build-dir src-dir tgt)
+  "Find information for current executable. My create Makefile for flymake.
+Require the project be compiled successfully at least once."
   (let (flag-make
+        base-dir
+        mk
+        cm
         c-flags
         c-defines
         exe-dir
@@ -269,11 +311,14 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
         (executable (cadr tgt))
         queried-c-flags
         queried-c-defines
-        is-c
-        )
+        is-c)
+
+    (setq base-dir (cppcm--guess-dir-containing-cmakelists-dot-txt src-dir))
+    (setq cm (cppcm--cmakelists-dot-txt base-dir))
     (setq exe-dir (concat
                    (directory-file-name build-dir)
                    (cppcm-strip-prefix root-src-dir (file-name-directory cm))))
+
     (setq flag-make
           (concat
            exe-dir
@@ -285,7 +330,7 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
     (setq exe-full-path (cppcm-guess-exe-full-path exe-dir tgt))
 
     (when exe-full-path
-      (puthash (concat cm "exe-full-path") exe-full-path cppcm-hash)
+      (puthash (cppcm--exe-hashkey base-dir) exe-full-path cppcm-hash)
       (when (and (file-exists-p flag-make)
               (setq queried-c-flags (cppcm-query-match-line flag-make "\s*\\(CX\\{0,2\\}_FLAGS\\)\s*=\s*\\(.*\\)"))
               )
@@ -298,37 +343,41 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
         ;; just what ever preprocess flag we got
         (setq c-defines (match-string 2 queried-c-defines))
 
-        (puthash cm (list c-flags c-defines) cppcm-hash)
+        (puthash (cppcm--flags-hashkey base-dir) (list c-flags c-defines) cppcm-hash)
 
-        (with-temp-file mk
-          (insert (concat "# Generated by " cppcm-prog ".\n"
-                          "include " flag-make "\n"
-                          ".PHONY: check-syntax\ncheck-syntax:\n\t${"
-                          (if (string= is-c "C") "CC" "CXX")
-                          "} -o /dev/null ${"
-                          is-c
-                          "_FLAGS} ${"
-                          is-c
-                          "_DEFINES} "
-                          (mapconcat 'identity cppcm-extra-preprocss-flags-from-user " ")
-                          " -S ${CHK_SOURCES}"
-                          )))))
+        (when cppcm-write-flymake-makefile
+            (setq mk (concat (file-name-as-directory src-dir) cppcm-makefile-name))
+            (with-temp-file mk
+              (insert (concat "# Generated by " cppcm-prog ".\n"
+                              "include " flag-make "\n"
+                              ".PHONY: check-syntax\ncheck-syntax:\n\t${"
+                              (if (string= is-c "C") "CC" "CXX")
+                              "} -o /dev/null ${"
+                              is-c
+                              "_FLAGS} ${"
+                              is-c
+                              "_DEFINES} "
+                              (mapconcat 'identity cppcm-extra-preprocss-flags-from-user " ")
+                              " -S ${CHK_SOURCES}"
+                              ))))
+        ))
     ))
 
-(defun cppcm-create-flymake-makefiles(root-src-dir src-dir build-dir)
+(defun cppcm-scan-info-from-cmake(root-src-dir src-dir build-dir)
   (let ((base src-dir)
         cm
-        mk
         subdir
         possible-targets
         tgt
-        e
-        )
+        e)
+
     ;; search all the subdirectory for CMakeLists.txt
-    (setq cm (concat (file-name-as-directory src-dir) "CMakeLists.txt"))
+    (setq cm (cppcm--cmakelists-dot-txt src-dir))
+
     ;; open CMakeLists.txt and find
     (when (file-exists-p cm)
       (setq possible-targets (cppcm-query-targets cm))
+
       (dolist (tgt possible-targets)
         ;; if the target is ${VAR_NAME}, we need query CMakeLists.txt to find actual value
         ;; of the target
@@ -336,10 +385,8 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
 
         (setq e (if (and (> (length e) 1) (string= (substring e 0 2) "${"))  (cppcm-guess-var (substring e 2 -1) cm) e))
         (setcar (nthcdr 1 tgt) e)
-        (setq mk (concat (file-name-as-directory src-dir) cppcm-makefile-name))
-        (when cppcm-write-flymake-makefile
-	  (cppcm-create-one-makefile root-src-dir build-dir cm tgt mk))
-        )
+
+        (cppcm-handle-one-executable root-src-dir build-dir src-dir tgt))
       )
     (dolist (f (directory-files base))
       (setq subdir (concat (file-name-as-directory base) f))
@@ -351,17 +398,19 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
                  (not (equal f ".svn"))
                  (not (equal f ".hg"))
                  )
-        (cppcm-create-flymake-makefiles root-src-dir subdir build-dir)
+        (cppcm-scan-info-from-cmake root-src-dir subdir build-dir)
         ))))
 
-(defun cppcm--guess-dir-containing-cmakelists-dot-txt ()
+(defun cppcm--guess-dir-containing-cmakelists-dot-txt (&optional src-dir)
   (let ((i 0)
         dir
         found)
-    (setq dir (concat (file-name-as-directory (file-name-directory buffer-file-name))))
+    (if src-dir (setq dir src-dir)
+      (setq dir (file-name-as-directory (file-name-directory buffer-file-name))))
+
     (while (and (< i cppcm-proj-max-dir-level) (not found) )
       (cond
-       ((file-exists-p (concat dir "CMakeLists.txt"))
+       ((file-exists-p (cppcm--cmakelists-dot-txt dir))
         (setq found t)
         )
        (t
@@ -380,9 +429,7 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
         dir)
     (setq dir (cppcm--guess-dir-containing-cmakelists-dot-txt))
 
-    (when dir
-      (setq exe-path (gethash (concat dir "CMakeLists.txt" "exe-full-path") cppcm-hash))
-      )
+    (if dir (setq exe-path (gethash (cppcm--exe-hashkey dir) cppcm-hash)))
 
     (if exe-path
         (progn
@@ -396,20 +443,25 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
 
 (defun cppcm-set-c-flags-current-buffer ()
   (interactive)
-  (let (dir
-        cm
+  (let ((dir (cppcm--guess-dir-containing-cmakelists-dot-txt))
         c-compiling-flags-list
         c-flags
-        c-defines
-        )
-    (setq dir (cppcm--guess-dir-containing-cmakelists-dot-txt))
+        c-defines)
+
     (when dir
-      (setq cm (concat dir "CMakeLists.txt"))
-      (setq c-compiling-flags-list (gethash cm cppcm-hash))
+      (setq c-compiling-flags-list (gethash (cppcm--flags-hashkey dir) cppcm-hash))
       (setq c-flags (nth 0 c-compiling-flags-list))
       (setq c-defines (nth 1 c-compiling-flags-list))
-
-      (setq cppcm-include-dirs (if c-flags (split-string c-flags "\s+" t)))
+      (when c-clags
+        (setq cppcm-include-dirs (split-string c-flags "\s+" t))
+        (setq cppcm-include-dirs (delq nil
+                                       (mapcar (lambda (str)
+                                                 (if (string-match "^-I *" str)
+                                                     ;; well, make sure the include is absolute path containing NO dot character
+                                                     (concat "-I" (file-truename (replace-regexp-in-string "^-I *" "" str)))
+                                                   str))
+                                               cppcm-include-dirs))
+              ))
       (setq cppcm-preprocess-defines (if c-defines (split-string c-defines "\s+" t)))
       )
     ))
@@ -427,33 +479,9 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
   (call-interactively 'compile))
 
 ;;;###autoload
-(defun cppcm-create-or-update-flymake-files ()
-  "Create flymake files used by flymake and data used by (cppcm-get-cppflags-in-current-buffer)"
-  (interactive)
-  (let (dirs
-        build-dir
-        src-dir)
-    ;; (clrhash cppcm-hash) ; if we open a cmake and non-cmake project ...
-    ;; when I export org file with some c++/c code embedded, the buffer-file-name is nil
-    (when buffer-file-name
-      (setq dirs (cppcm-get-dirs))
-      (cond
-       ((car dirs)
-        (setq build-dir (nth 2 dirs))
-        (setq src-dir (nth 3 dirs))
-        (cppcm-create-flymake-makefiles src-dir src-dir build-dir)
-        (cppcm-set-c-flags-current-buffer))
-       ((nth 1 dirs)
-        (message "Please run cmake in %s at first" (nth 1 dirs))
-        )
-       (t
-        (message "Build directory is missing! Create it and run cmake in it.")))
-      )))
-
-;;;###autoload
 (defun cppcm-version ()
   (interactive)
-  (message "0.4.9"))
+  (message "0.4.10"))
 
 ;;;###autoload
 (defun cppcm-compile (&optional prefix)
@@ -481,9 +509,35 @@ by customize `cppcm-compile-list'."
 
 ;;;###autoload
 (defun cppcm-reload-all ()
-  "re-create Makefiles for flymake and re-set all the flags"
+  "reload and reproduce everything"
   (interactive)
-  (cppcm-create-or-update-flymake-files)
+  (let (dirs )
+    (when buffer-file-name
+      (setq dirs (cppcm-get-dirs))
+      (cond
+       ((car dirs)
+        ;; looks normal, we find buid-dir and soure-dir
+        ;; create info for other plugins at first
+        ;; cppcm-include-dirs will be set here
+        ;; create makefiles may fail if the executable does not exist yet
+        (condition-case nil
+            (progn
+              ;; the order is fixed
+              (cppcm-scan-info-from-cmake (nth 3 dirs) (nth 3 dirs) (nth 2 dirs))
+              (cppcm-set-c-flags-current-buffer))
+          (error
+           (message "Failed to create Makefile for flymake. Continue anyway.")))
+        )
+       ((nth 1 dirs)
+        ;; build-dir is found, but flags in build-dir need be created
+        ;; warn user.
+        (message "Please run cmake in %s at first" (nth 1 dirs))
+        )
+       (t
+        (message "Build directory is missing! Create it and run cmake in it.")))
+      )
+    )
+
   (when cppcm-include-dirs
     ;; for auto-complete-clang
     (setq ac-clang-flags (append cppcm-include-dirs cppcm-preprocess-defines cppcm-extra-preprocss-flags-from-user))
