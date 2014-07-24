@@ -4,7 +4,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake Flycheck
-;; Version: 0.4.10
+;; Version: 0.4.11
 
 ;; This file is not part of GNU Emacs.
 
@@ -452,7 +452,8 @@ Require the project be compiled successfully at least once."
       (setq c-compiling-flags-list (gethash (cppcm--flags-hashkey dir) cppcm-hash))
       (setq c-flags (nth 0 c-compiling-flags-list))
       (setq c-defines (nth 1 c-compiling-flags-list))
-      (when c-clags
+
+      (when c-flags
         (setq cppcm-include-dirs (split-string c-flags "\s+" t))
         (setq cppcm-include-dirs (delq nil
                                        (mapcar (lambda (str)
@@ -481,7 +482,7 @@ Require the project be compiled successfully at least once."
 ;;;###autoload
 (defun cppcm-version ()
   (interactive)
-  (message "0.4.10"))
+  (message "0.4.11"))
 
 ;;;###autoload
 (defun cppcm-compile (&optional prefix)
