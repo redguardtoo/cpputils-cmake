@@ -1,4 +1,4 @@
-* cpputils-cmake.el (version 0.4.10)
+* cpputils-cmake.el (v0.4.10)
 cpputils-cmake automatically enable real time syntax check (Flymake) and IntelliSense (auto-complete+auto-complete-clang, company-mode) if you use [[http://www.cmake.org][CMake]].
 
 It does all the configuration dirty job *automatically* for you. So you can use [[http://flymake.sourceforge.net/][Flymake]], [[https://github.com/flycheck/flycheck][Flycheck]], [[http://cx4a.org/software/auto-complete/][auto-complete]], [[https://github.com/brianjcj/auto-complete-clang][auto-complete-clang]], [[https://github.com/company-mode/company-mode][company-mode]], [[http://www.emacswiki.org/emacs/CompileCommand][compile]], ff-find-other-file (if you press `C-x C-o` in C/C++ file, ff-find-other-file will open *correct* header file under cursor) with almost no configuration.
@@ -41,11 +41,13 @@ Copy and paste below code into your .emacs:
 #+END_SRC
 
 *WARNING*:
-cpputils-cmake assumes that in CMakeLists.txt contains a rule to create target/executable which can be process by regular expression.
+cpputils-cmake assumes that CMakeLists.txt contains a rule to create executable.
 
-The rule is either "add_executable" or "add_library". You can use "include" some common.cmake in CMakeLists.txt. But don't put "add_executable" or "add_library" into common.cmake because cpputils-cmake won't read any included *.cmake.
+The rule is either "add_executable" or "add_library".
 
-Here is a sample CMakeLists.txt:
+You can include some common.cmake in CMakeLists.txt. But don't put "add_executable" or "add_library" into common.cmake because cpputils-cmake *won't read any included *.cmake*.
+
+A sample CMakeLists.txt:
 #+BEGIN_SRC cmake
 set(TGT "main")
 add_executable(${TGT} ${SOURCES})
