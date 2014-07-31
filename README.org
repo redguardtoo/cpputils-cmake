@@ -12,19 +12,17 @@ Key points before you continue:
 ** easy way
 cpputils-cmake is available at [[https://github.com/milkypostman/melpa]].
 
-So the best way to install is using Emacs' package manager.
-
-Or you can download the package from https://dl.dropboxusercontent.com/u/858862/myelpa/index.html and manually install it by “M-x package-install-file”.
+The best way to install is using Emacs package manager.
 
 ** manual way
-If you don't want to use package manager, you only need download the file cpputils-cmake.el and put it somewhere (say ~/.emacs/lisp), then add below code into your .emacs:
+If you don't use package manager, you only need download cpputils-cmake.el and put it somewhere (say ~/.emacs/lisp), then add below code into your .emacs:
 #+BEGIN_SRC lisp
 (add-to-list 'load-path "~/.emacs.d/lisp/")
 (require 'cpputils-cmake)
 #+END_SRC
 
 * Set up
-Copy and paste below code into your .emacs:
+Paste below code into your .emacs:
 #+BEGIN_SRC elisp
 (add-hook 'c-mode-common-hook
           (lambda ()
@@ -45,7 +43,7 @@ cpputils-cmake assumes that CMakeLists.txt contains a rule to create executable.
 
 The rule is either "add_executable" or "add_library".
 
-You can include some common.cmake in CMakeLists.txt. But don't put "add_executable" or "add_library" into common.cmake because cpputils-cmake *won't read any included *.cmake*.
+You can include some common.cmake in CMakeLists.txt. But don't put "add_executable" or "add_library" into common.cmake because cpputils-cmake will ignore any included *.cmake.
 
 A sample CMakeLists.txt:
 #+BEGIN_SRC cmake
@@ -118,13 +116,13 @@ cpputils-cmake scanning is light weight enough so below code is *optional*:
               )))
 #+END_SRC
 ** get full path of target
-The command "cppcm-get-exe-path-current-buffer" will copy the current executable into the kill ring and OS clipboard.
+The command "cppcm-get-exe-path-current-buffer" will copy current executable into kill ring AND OS clipboard.
 
 You need install `xsel` under Linux to support OS clipboard.
 
-This could be very useful if you want to access the directory of the executable as quickly as possible.
+This could be useful if you need access the executable's directory.
 
-You can yank (paste) the full path to the eshell or minibuffer and press "M-backspace" to get the directory name.
+You can yank (paste) the full path to eshell or minibuffer and press "M-backspace" to get the directory name.
 
 ** reload cpputils-cmake
 You can always `M-x cppcm-reload-all` any time.
@@ -162,7 +160,7 @@ Here is the steps to send bug report:
 - `C-h v cppcm-hash` and send me the output
 - `M-x cppcm-version` and send the output
 
-Besides, I still need general environment information.
+Besides, I still need general environment information like Emacs version and OS version.
 * License
 Copyright (C) 2012 Chen Bin
 
