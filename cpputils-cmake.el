@@ -4,7 +4,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake Flycheck
-;; Version: 0.4.13
+;; Version: 0.4.14
 
 ;; This file is not part of GNU Emacs.
 
@@ -220,9 +220,9 @@ return (found possible-build-dir build-dir src-dir)"
   (let (rlt r)
     (cond
      ((string= var "PROJECT_NAME")
-      (setq r (concat "\s*project(\s*\\(\\w+\\)\s*)")))
+      (setq r (concat "\s*project(\s*\\([^ ]+\\)\s*)")))
      (t
-      (setq r (concat "\s*set(\s*" var "\s+\\(\\w+\\)\s*)" ))
+      (setq r (concat "\s*set(\s*" var "\s+\\([^ ]+\\)\s*)" ))
       ))
    (setq rlt (cppcm-query-var cm r))
     rlt))
@@ -509,7 +509,7 @@ Require the project be compiled successfully at least once."
 ;;;###autoload
 (defun cppcm-version ()
   (interactive)
-  (message "0.4.13"))
+  (message "0.4.14"))
 
 ;;;###autoload
 (defun cppcm-compile (&optional prefix)
