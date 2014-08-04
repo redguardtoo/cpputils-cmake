@@ -4,7 +4,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake Flycheck
-;; Version: 0.4.12
+;; Version: 0.4.13
 
 ;; This file is not part of GNU Emacs.
 
@@ -217,7 +217,15 @@ return (found possible-build-dir build-dir src-dir)"
     (list found possible-build-dir build-dir src-dir)))
 
 (defun cppcm-guess-var (var cm)
-    (cppcm-query-var cm (concat "\s*set(\s*" var "\s+\\(\\w+\\)\s*)" )))
+  (let (rlt r)
+    (cond
+     ((string= var "PROJECT_NAME")
+      (setq r (concat "\s*project(\s*\\(\\w+\\)\s*)")))
+     (t
+      (setq r (concat "\s*set(\s*" var "\s+\\(\\w+\\)\s*)" ))
+      ))
+   (setq rlt (cppcm-query-var cm r))
+    rlt))
 
 (defun cppcm-strip-prefix (prefix str)
   "strip prefix from str"
@@ -501,7 +509,7 @@ Require the project be compiled successfully at least once."
 ;;;###autoload
 (defun cppcm-version ()
   (interactive)
-  (message "0.4.12"))
+  (message "0.4.13"))
 
 ;;;###autoload
 (defun cppcm-compile (&optional prefix)
@@ -559,7 +567,7 @@ by customize `cppcm-compile-list'."
       )
     )
 
-  (message "cppcm-include-dirs=%s" cppcm-include-dirs)
+  (if cppcm-debug (message "cppcm-include-dirs=%s" cppcm-include-dirs))
 
   (when cppcm-include-dirs
     ;; for auto-complete-clang
