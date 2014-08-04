@@ -51,6 +51,12 @@ set(TGT "main")
 add_executable(${TGT} ${SOURCES})
 #+END_SRC
 
+Another CMakeLists.txt:
+#+BEGIN_SRC cmake
+project(main)
+add_executable(${PROJECT_NAME} ${SOURCES})
+#+END_SRC
+
 * One minute step by step tutorial
 ** one line bash to create "hello" project
 #+BEGIN_SRC sh
