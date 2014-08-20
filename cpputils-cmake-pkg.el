@@ -1,2 +1,2 @@
-(define-package "cpputils-cmake" "0.4.14"
+(define-package "cpputils-cmake" "0.4.15"
                 "Easy real time C++ syntax check and intellisense if you use CMake")
