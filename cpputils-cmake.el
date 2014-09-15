@@ -577,12 +577,14 @@ by customize `cppcm-compile-list'."
     (if cppcm-debug (message "company-clang-arguments=%s" company-clang-arguments))
 
     (when (fboundp 'semantic-add-system-include)
+      (semantic-reset-system-include)
       (mapcar 'semantic-add-system-include
               (delq nil
                     (mapcar (lambda (str)
                               (if (string-match "^-I *" str)
                                   (replace-regexp-in-string "^-I *" "" str)))
                             ac-clang-flags))))
+
     ;; unlike auto-complete and company-mode, flycheck prefer make things complicated
     (setq flycheck-clang-include-path (delq nil
                                             (mapcar (lambda (str)
