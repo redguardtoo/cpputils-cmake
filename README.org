@@ -1,14 +1,17 @@
-* cpputils-cmake.el (v0.4.17)
-cpputils-cmake automatically enable real time syntax check (Flymake) and IntelliSense (auto-complete+auto-complete-clang, company-mode) if you use [[http://www.cmake.org][CMake]].
+* cpputils-cmake.el (v0.4.18)
+cpputils-cmake automatically enable real time syntax check (Flymake) and IntelliSense/code-completion  if you use [[http://www.cmake.org][CMake]].
 
-It does all the configuration dirty job *automatically* for you. So you can use [[http://flymake.sourceforge.net/][Flymake]], [[https://github.com/flycheck/flycheck][Flycheck]], [[http://cx4a.org/software/auto-complete/][auto-complete]], [[https://github.com/brianjcj/auto-complete-clang][auto-complete-clang]], [[https://github.com/company-mode/company-mode][company-mode]], [[http://www.emacswiki.org/emacs/CompileCommand][compile]], ff-find-other-file (if you press `C-x C-o` in C/C++ file, ff-find-other-file will open *correct* header file under cursor) with almost no configuration.
+It does all the configuration dirty job *automatically* for following plugins and commands,
+- [[http://flymake.sourceforge.net/][Flymake]]
+- [[https://github.com/flycheck/flycheck][Flycheck]]
+- [[http://cx4a.org/software/auto-complete/][auto-complete]]
+- [[https://github.com/brianjcj/auto-complete-clang][auto-complete-clang]]
+- [[https://github.com/company-mode/company-mode][company-mode]]
+- [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Semantic.html][semantic]]
+- [[http://www.emacswiki.org/emacs/CompileCommand]["M-x compile"]]
+- "M-x ff-find-other-file" (if you press `C-x C-o` in C/C++ file, ff-find-other-file will open *correct* header file under cursor) with almost no configuration.
 
-Key points before you continue:
-- It's lightweight.
-- easy to use, copy the elisp code from "Set up" section into you ~/.emacs. DONE! Use Emacs as usual and ignore advanced tips in remaining sections.
-- cpputils-cmake will configure many third party plugins *automatically* for you. But it's *NOT* dependent on those plugins. Only CMake is required.
-* Warning
-cpputils-cmake *does NOT support paths containing space character*!
+Please note cpputils-cmake will configure third party plugins *automatically*. But it's *NOT* dependent on those plugins. It surely will not load those plugins, so it's light weight. Only CMake is required.
 * Install
 ** easy way
 cpputils-cmake is available at [[https://github.com/milkypostman/melpa]].
@@ -137,12 +140,13 @@ You can always `M-x cppcm-reload-all` at any time.
 There is also `cppcm-reload-all-hook` which will be called after `cppcm-reload-all`. This give you a chance to tweak or override the set up.
 
 Here is the list of global variables third party plugins will use (and you can tweak):
-| variable name               | plugin              |
-|-----------------------------+---------------------|
-| ac-clang-flags              | auto-complete-clang |
-| company-clang-arguments     | company-mode        |
-| cc-search-directories       | ff-find-other-file  |
-| flycheck-clang-include-path | flycheck            |
+| variable name                           | plugin              |
+|-----------------------------------------+---------------------|
+| ac-clang-flags                          | auto-complete-clang |
+| company-clang-arguments                 | company-mode        |
+| cc-search-directories                   | ff-find-other-file  |
+| flycheck-clang-include-path             | flycheck            |
+| semantic-dependency-system-include-path | semantic            |
 
 ** compile only current target
 "M-x cppcm-compile".
@@ -153,9 +157,10 @@ Please press "C-h v cppcm-compile-list" for other compile options.
 "M-x cppcm-recompile"
 
 * Credits
-- [[https://github.com/dojeda][David Ojeda (AKA dojeda)]] developed the algorithm to locate the top level project.
-- [[https://github.com/erreina][Ernesto Rodriguez Reina (AKA erreina)]] added the command "cppcm-recompile".
+- [[https://github.com/dojeda][David Ojeda (AKA dojeda)]] developed the algorithm to locate the top level project
+- [[https://github.com/erreina][Ernesto Rodriguez Reina (AKA erreina)]] added the command "cppcm-recompile"
 - [[http://chachi.github.io/][Jack Morrison (AKA chachi)]] added support for [[https://github.com/flycheck/flycheck][Flycheck]]
+- [[https://github.com/JP-Ellis][Joshua Ellis (AKA JP-Ellis)]] added support for [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Semantic.html][semantic]]
 * Bug Report
 Check [[https://github.com/redguardtoo/cpputils-cmake]].
 
