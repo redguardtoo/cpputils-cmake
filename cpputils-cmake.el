@@ -576,6 +576,15 @@ by customize `cppcm-compile-list'."
                                                                    cppcm-extra-preprocss-flags-from-user)))
     (if cppcm-debug (message "company-clang-arguments=%s" company-clang-arguments))
 
+    (when (fboundp 'semantic-add-system-include)
+      (semantic-reset-system-include)
+      (mapcar 'semantic-add-system-include
+              (delq nil
+                    (mapcar (lambda (str)
+                              (if (string-match "^-I *" str)
+                                  (replace-regexp-in-string "^-I *" "" str)))
+                            ac-clang-flags))))
+
     ;; unlike auto-complete and company-mode, flycheck prefer make things complicated
     (setq flycheck-clang-include-path (delq nil
                                             (mapcar (lambda (str)
@@ -584,9 +593,9 @@ by customize `cppcm-compile-list'."
     (if cppcm-debug (message "flycheck-clang-include-path=%s" flycheck-clang-include-path))
 
     (setq flycheck-clang-definitions (delq nil
-                                            (mapcar (lambda (str)
-						      (if (string-match "^-D *" str) (replace-regexp-in-string "^-D *" "" str)))
-                                                    ac-clang-flags)))
+                                           (mapcar (lambda (str)
+                                                     (if (string-match "^-D *" str) (replace-regexp-in-string "^-D *" "" str)))
+                                                   ac-clang-flags)))
     (if cppcm-debug (message "flycheck-clang-definitions=%s" flycheck-clang-definitions))
 
     ;; set cc-search-directories automatically, so ff-find-other-file will succeed
