@@ -1,7 +1,7 @@
-* cpputils-cmake.el (v0.4.18)
-cpputils-cmake automatically enable real time syntax check (Flymake) and IntelliSense/code-completion  if you use [[http://www.cmake.org][CMake]].
+* cpputils-cmake.el (v0.4.19)
+cpputils-cmake gives you *perfect* syntax check (Flymake) and IntelliSense/code-completion if you use [[http://www.cmake.org][CMake]].
 
-It does all the configuration dirty job *automatically* for following plugins and commands,
+It does all the dirty setup *automatically* for following plugins and commands,
 - [[http://flymake.sourceforge.net/][Flymake]]
 - [[https://github.com/flycheck/flycheck][Flycheck]]
 - [[http://cx4a.org/software/auto-complete/][auto-complete]]
@@ -9,24 +9,24 @@ It does all the configuration dirty job *automatically* for following plugins an
 - [[https://github.com/company-mode/company-mode][company-mode]]
 - [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Semantic.html][semantic]]
 - [[http://www.emacswiki.org/emacs/CompileCommand]["M-x compile"]]
-- "M-x ff-find-other-file" (if you press `C-x C-o` in C/C++ file, ff-find-other-file will open *correct* header file under cursor) with almost no configuration.
+- "M-x ff-find-other-file" (if you press `C-x C-o` in C/C++ file, ff-find-other-file will open *correct* header file under cursor)
 
-Please note cpputils-cmake will configure third party plugins *automatically*. But it's *NOT* dependent on those plugins. It surely will not load those plugins, so it's light weight. Only CMake is required.
+Please note cpputils-cmake is *independent* on those plugins. Only CMake is required.
 * Install
 ** easy way
 cpputils-cmake is available at [[https://github.com/milkypostman/melpa]].
 
-The best way to install is using Emacs package manager.
+The best way is using Emacs package manager.
 
 ** manual way
-If you don't use package manager, you only need download cpputils-cmake.el and put it somewhere (say ~/.emacs/lisp), then add below code into your .emacs:
+Download and place cpputils-cmake.el somewhere (say ~/.emacs/lisp), add below code into your .emacs:
 #+BEGIN_SRC lisp
 (add-to-list 'load-path "~/.emacs.d/lisp/")
 (require 'cpputils-cmake)
 #+END_SRC
 
-* Set up
-Paste below code into your .emacs:
+* Setup
+Insert below code into your .emacs:
 #+BEGIN_SRC elisp
 (add-hook 'c-mode-common-hook
           (lambda ()
@@ -47,19 +47,18 @@ cpputils-cmake assumes that CMakeLists.txt contains a rule to create executable.
 
 The rule is either "add_executable" or "add_library".
 
-You can include some common.cmake in CMakeLists.txt. But don't put "add_executable" or "add_library" into common.cmake because cpputils-cmake will ignore any included *.cmake.
+Included file and macro in CMakeLists.txt will be *ignored*.
 
-A sample CMakeLists.txt:
+A sample CMakeLists.txt we can handle:
 #+BEGIN_SRC cmake
-set(TGT "main")
+project(proj1)
+set(VAR2 "a2")
+set(VAR1 a1-${VAR2})
+set(TGT hello-${PROJECT_NAME}-${VAR1}}")
 add_executable(${TGT} ${SOURCES})
 #+END_SRC
 
-Another CMakeLists.txt:
-#+BEGIN_SRC cmake
-project(main)
-add_executable(${PROJECT_NAME} ${SOURCES})
-#+END_SRC
+The executable's name will be "hello-proj1-a1-a2".
 
 * One minute step by step tutorial
 ** one line bash to create "hello" project
@@ -88,17 +87,17 @@ If you don't want to use flymake, you can tell cpputils-cmake NOT to create Make
 (setq cppcm-write-flymake-makefile nil)
 #+END_SRC
 ** flycheck
-See [[https://github.com/flycheck/flycheck]] for flycheck setup. No set up needed here.
+See [[https://github.com/flycheck/flycheck]] for flycheck setup. No setup needed here.
 ** compile
 Compile the program: `M-x compile`
 
-You can see the default command line displayed in minibuffer is `make -C ~/your-projects-blah-blah/hello/build`
+The command line displayed in minibuffer is `make -C ~/your-projects-blah-blah/hello/build`
 
-BTW, you can also run the command `M-x cppcm-compile` to compile the current excutable only.
+BTW, you can also `M-x cppcm-compile` to compile the current excutable only.
 
 You can see the actual command displayed in minibuffer is `make -C ~/your-project-blah-blah/hello/build/sub-project-dir-if-your-are-editing-its-cpp-file`
 ** start gdb
-Press hot key `C-c C-g` (suppose you've copied my configuration from previous section).
+Press hotkey `C-c C-g` (suppose you've copied my configuration from previous section).
 
 You can see the gud-gdb starts and the executable "~/your-projects-blah-blah/hello/build/main" is loaded automatically.
 
@@ -109,9 +108,9 @@ Use them as usual. You can see that the Intellisense/auto-complete is more preci
 Use them as usual. You can see that the Intellisense/auto-complete is more precise.
 
 ** open header file
-Press the hot key `C-x C-o` or `M-x ff-find-other-file`. The corresponding header file is opened correctly.
+Press the hotkey `C-x C-o` or `M-x ff-find-other-file`. The corresponding header is opened correctly.
 
-This is the default feature of Emacs. What cpputils-cmake does is set up the directories of those header files for you automatically so that the header files could be found by Emacs.
+This is the default feature of Emacs. What cpputils-cmake does is to set up the directories of those header files for you automatically so that the header files could be found by Emacs.
 
 * Tips
 ** avoid scanning when opening system header files
@@ -125,7 +124,7 @@ cpputils-cmake scanning is light weight enough so below code is *optional*:
                     (cppcm-reload-all))
               )))
 #+END_SRC
-** get full path of target
+** full path of executable to build
 The command "cppcm-get-exe-path-current-buffer" will copy current executable into kill ring AND OS clipboard.
 
 You need install `xsel` under Linux to support OS clipboard.
@@ -137,7 +136,7 @@ You can yank (paste) the full path to eshell or minibuffer and press "M-backspac
 ** reload cpputils-cmake
 You can always `M-x cppcm-reload-all` at any time.
 
-There is also `cppcm-reload-all-hook` which will be called after `cppcm-reload-all`. This give you a chance to tweak or override the set up.
+There is also `cppcm-reload-all-hook` which will be called after `cppcm-reload-all`. This give you a chance to tweak or override the setup.
 
 Here is the list of global variables third party plugins will use (and you can tweak):
 | variable name                           | plugin              |

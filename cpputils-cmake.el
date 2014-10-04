@@ -1,23 +1,25 @@
-;;; cpputils-cmake.el --- Easy real time C++ syntax check and IntelliSense if you use CMake.
+;;; cpputils-cmake.el --- Easy realtime C++ syntax check and IntelliSense with CMake.
 
 ;; Copyright (C) 2014 Chen Bin
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake Flycheck
-;; Version: 0.4.18
+;; Version: 0.4.19
 
 ;; This file is not part of GNU Emacs.
 
 ;; This file is free software (GPLv3 License)
 
-;; How to set it up:
-;; See README.org which is distributed with this file
+;; Set up:
+;;
+;;  (add-hook 'c-mode-common-hook (lambda ()
+;;              (if (derived-mode-p 'c-mode 'c++-mode)
+;;                  (cppcm-reload-all))))
+;;
+;; https://github.com/redguardtoo/cpputils-cmake/blob/master/README.org for use cases
 
 ;;; Code:
 
-;; The basic algorithm is simple:
-;; 1. Find the CMakeLists.txt from current directory.
-;; 2. Extract information from it and fill in cppcm-hash
 (defcustom cppcm-proj-max-dir-level 16 "maximum level of the project directory tree"
   :type 'number
   :group 'cpputils-cmake)
@@ -108,17 +110,21 @@ For example:
 
 (defun cppcm-parent-dir (d) (file-name-directory (directory-file-name d)))
 
-(defun cppcm-query-var (f re)
-  (let (v lines)
-    (setq lines (cppcm-readlines f))
+(defun cppcm--query-var-from-lines (lines REGEX)
+  (let (v)
     (catch 'brk
       (dolist (l lines)
-        (when (string-match re l)
+        (when (string-match REGEX l)
           (setq v (match-string 1 l))
           (throw 'brk t)
           )))
-    v
-    ))
+    (if (string-match "^\"\\([^\"]+\\)\"$" v)
+        (setq v (match-string 1 v)))
+    v))
+
+(defun cppcm-query-var (FILE REGEX)
+  "return the value `set (var value)'"
+  (cppcm--query-var-from-lines (cppcm-readlines FILE) REGEX))
 
 (defun cppcm-query-var-from-last-matched-line (f re)
   "get the last matched line"
@@ -134,15 +140,14 @@ For example:
 
 ;; get all the possible targets
 (defun cppcm-query-targets (f)
-  (let ((vars ())
-        lines)
+  "return '((target value))"
+  (let (vars lines)
     (setq lines (cppcm-readlines f))
     (dolist (l lines)
       (if (string-match cppcm-cmake-target-regex l)
         (push (list (downcase (match-string 1 l)) (match-string 2 l)) vars)
         ))
-    vars
-    ))
+    vars))
 
 ;; get all the possible targets
 ;; @return matched line, use (match-string 2 line) to get results
@@ -216,15 +221,61 @@ return (found possible-build-dir build-dir src-dir)"
              ))
     (list found possible-build-dir build-dir src-dir)))
 
-(defun cppcm-guess-var (var cm)
-  (let (rlt r)
+(defun cppcm--contains-variable-name (VALUE start)
+  (string-match "\$\{\\([^}]+\\)\}" VALUE start))
+
+(defun cppcm--decompose-var-value (VALUE)
+  "return the list by decomposing VALUE"
+  (let (rlt (start 0) (non-var-idx 0) var-name substr)
+    ;; (setq rlt (split-string VALUE "\$\{\\|\}"))
+    ;; charater scan might be better
+    (while (numberp (setq start (cppcm--contains-variable-name VALUE start)))
+      (setq var-name (match-string 1 VALUE))
+      ;; move the index
+      (when (< non-var-idx start)
+        (setq substr (substring VALUE non-var-idx start))
+
+        (add-to-list 'rlt substr t)
+        (add-to-list 'rlt (make-symbol var-name) t)
+        )
+
+      ;; "${".length + "}".length = 3
+      (setq start (+ start 3 (length var-name)))
+      (setq non-var-idx start)
+      )
+    ;; (setq rlt (list VALUE))
+    rlt))
+
+(defun cppcm-guess-var (var lines)
+  "get the value of var from lines"
+  (let (rlt
+        value
+        REGEX
+        mylist)
     (cond
      ((string= var "PROJECT_NAME")
-      (setq r (concat "\s*project(\s*\\([^ ]+\\)\s*)")))
+      (setq REGEX (concat "\s*project(\s*\\([^ ]+\\)\s*)")))
      (t
-      (setq r (concat "\s*set(\s*" var "\s+\\([^ ]+\\)\s*)" ))
+      (setq REGEX (concat "\s*set(\s*" var "\s+\\([^ ]+\\)\s*)" ))
       ))
-   (setq rlt (cppcm-query-var cm r))
+    ;; if rlt contains ${, then we first de-compose the rlt into a list:
+    ;; TODO else we just return the value
+    (setq value (cppcm--query-var-from-lines lines REGEX))
+    (cond
+     ((numberp (cppcm--contains-variable-name value 0))
+      (setq mylist (cppcm--decompose-var-value value))
+      (dolist (item mylist)
+        (cond
+         ((symbolp item)
+          (setq rlt (concat rlt (cppcm-guess-var (symbol-name item) lines)))
+          )
+         (t
+          (setq rlt (concat rlt item))
+          ))
+        )
+      )
+     (t (setq rlt value))
+     )
     rlt))
 
 (defun cppcm-strip-prefix (prefix str)
@@ -396,7 +447,8 @@ Require the project be compiled successfully at least once."
         ;; of the target
         (setq e (cadr tgt))
 
-        (setq e (if (and (> (length e) 1) (string= (substring e 0 2) "${"))  (cppcm-guess-var (substring e 2 -1) cm) e))
+        (setq e (if (and (> (length e) 1) (string= (substring e 0 2) "${"))
+                    (cppcm-guess-var (substring e 2 -1) (cppcm-readlines cm)) e))
         (setcar (nthcdr 1 tgt) e)
 
         (cppcm-handle-one-executable root-src-dir build-dir src-dir tgt))
@@ -504,7 +556,7 @@ Require the project be compiled successfully at least once."
 ;;;###autoload
 (defun cppcm-version ()
   (interactive)
-  (message "0.4.18"))
+  (message "0.4.19"))
 
 ;;;###autoload
 (defun cppcm-compile (&optional prefix)
