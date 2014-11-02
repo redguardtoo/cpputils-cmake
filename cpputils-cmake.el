@@ -4,7 +4,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake Flycheck
-;; Version: 0.4.19
+;; Version: 0.4.20
 
 ;; This file is not part of GNU Emacs.
 
@@ -111,6 +111,7 @@ For example:
 (defun cppcm-parent-dir (d) (file-name-directory (directory-file-name d)))
 
 (defun cppcm--query-var-from-lines (lines REGEX)
+  (if cppcm-debug (message "cppcm-proj-max-dir-level called"))
   (let (v)
     (catch 'brk
       (dolist (l lines)
@@ -128,6 +129,7 @@ For example:
 
 (defun cppcm-query-var-from-last-matched-line (f re)
   "get the last matched line"
+  (if cppcm-debug (message "cppcm-query-var-from-last-matched-line called"))
   (let (vlist lines)
     (setq lines (cppcm-readlines f))
     (dolist (l lines)
@@ -192,9 +194,11 @@ For example:
 (defun cppcm-get-dirs ()
   "search from current directory to the parent to locate build directory
 return (found possible-build-dir build-dir src-dir)"
+  (if cppcm-debug "cppcm-get-dirs called")
   (let ((crt-proj-dir (file-name-as-directory (file-name-directory buffer-file-name)))
         (i 0)
         found
+        rlt
         build-dir
         src-dir
         possible-build-dir)
@@ -219,7 +223,9 @@ return (found possible-build-dir build-dir src-dir)"
              (setq src-dir (cppcm-get-root-source-dir build-dir))
              (setq cppcm-src-dir src-dir)
              ))
-    (list found possible-build-dir build-dir src-dir)))
+    (setq rlt (list found possible-build-dir build-dir src-dir))
+    (if cppcm-debug "(cppcm-get-dirs)=%s" rlt)
+    rlt))
 
 (defun cppcm--contains-variable-name (VALUE start)
   (string-match "\$\{\\([^}]+\\)\}" VALUE start))
@@ -247,7 +253,7 @@ return (found possible-build-dir build-dir src-dir)"
     rlt))
 
 (defun cppcm-guess-var (var lines)
-  "get the value of var from lines"
+  "get the value of VAR from LINES"
   (let (rlt
         value
         REGEX
@@ -258,7 +264,7 @@ return (found possible-build-dir build-dir src-dir)"
      (t
       (setq REGEX (concat "\s*set(\s*" var "\s+\\([^ ]+\\)\s*)" ))
       ))
-    ;; if rlt contains ${, then we first de-compose the rlt into a list:
+    ;; if rlt contains "${", we first de-compose the rlt into a list:
     ;; TODO else we just return the value
     (setq value (cppcm--query-var-from-lines lines REGEX))
     (cond
@@ -318,6 +324,7 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
 ;; I don't consider the win32 environment because cmake support Visual Studio
 ;; @return full path of executable and we are sure it exists
 (defun cppcm-guess-exe-full-path (exe-dir tgt)
+  (if cppcm-debug (message "cppcm-proj-max-dir-level called => %s %s" exe-dir tgt))
   (let (p
         base-exe-name
         (type (car tgt))
@@ -365,6 +372,10 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
 (defun cppcm-handle-one-executable (root-src-dir build-dir src-dir tgt)
   "Find information for current executable. My create Makefile for flymake.
 Require the project be compiled successfully at least once."
+
+  (if cppcm-debug (message "cppcm-handle-one-executable called")
+    root-src-dir build-dir src-dir tgt)
+
   (let (flag-make
         base-dir
         mk
@@ -391,8 +402,10 @@ Require the project be compiled successfully at least once."
            executable
            ".dir/flags.make"
            ))
+    (if cppcm-debug (message "flag-make=%s" flag-make))
     ;; try to guess the executable file full path
     (setq exe-full-path (cppcm-guess-exe-full-path exe-dir tgt))
+    (if cppcm-debug (message "exe-full-path=%s" exe-full-path))
 
     (when exe-full-path
       (puthash (cppcm--exe-hashkey base-dir) exe-full-path cppcm-hash)
@@ -428,6 +441,7 @@ Require the project be compiled successfully at least once."
     ))
 
 (defun cppcm-scan-info-from-cmake(root-src-dir src-dir build-dir)
+  (if cppcm-debug (message "cppcm-scan-info-from-cmake called => %s %s %s" root-src-dir src-dir build-dir))
   (let ((base src-dir)
         cm
         subdir
@@ -440,7 +454,9 @@ Require the project be compiled successfully at least once."
 
     ;; open CMakeLists.txt and find
     (when (file-exists-p cm)
+      (if cppcm-debug (message "CMakeLists.txt=%s" cm))
       (setq possible-targets (cppcm-query-targets cm))
+      (if cppcm-debug (message "possible-targets=%s" possible-targets))
 
       (dolist (tgt possible-targets)
         ;; if the target is ${VAR_NAME}, we need query CMakeLists.txt to find actual value
@@ -467,6 +483,7 @@ Require the project be compiled successfully at least once."
         ))))
 
 (defun cppcm--guess-dir-containing-cmakelists-dot-txt (&optional src-dir)
+  (if cppcm-debug (message "cppcm--guess-dir-containing-cmakelists-dot-txt called => %s" src-dir))
   (let ((i 0)
         dir
         found)
@@ -485,10 +502,12 @@ Require the project be compiled successfully at least once."
       (setq i (+ i 1)))
     (unless found
       (setq dir nil))
+    (if cppcm-debug (message "dir=%s" dir))
     dir))
 
 ;;;###autoload
 (defun cppcm-get-exe-path-current-buffer ()
+  (if cppcm-debug (message "cppcm-get-exe-path-current-buffer called"))
   (interactive)
   (let (exe-path
         dir)
@@ -508,6 +527,9 @@ Require the project be compiled successfully at least once."
 
 (defun cppcm-set-c-flags-current-buffer ()
   (interactive)
+
+  (if cppcm-debug (message "cppcm-set-c-flags-current-buffer called"))
+
   (let ((dir (cppcm--guess-dir-containing-cmakelists-dot-txt))
         c-compiling-flags-list
         c-flags
@@ -517,6 +539,8 @@ Require the project be compiled successfully at least once."
       (setq c-compiling-flags-list (gethash (cppcm--flags-hashkey dir) cppcm-hash))
       ;; please note the "-I" are always wrapped by double quotes
       ;; for example: -I"/usr/src/include"
+      (if cppcm-debug (message "c-compiling-flags-list=%s" c-compiling-flags-list))
+
       (setq c-flags (nth 0 c-compiling-flags-list))
       (setq c-defines (nth 1 c-compiling-flags-list))
 
@@ -556,7 +580,7 @@ Require the project be compiled successfully at least once."
 ;;;###autoload
 (defun cppcm-version ()
   (interactive)
-  (message "0.4.19"))
+  (message "0.4.20"))
 
 ;;;###autoload
 (defun cppcm-compile (&optional prefix)
@@ -589,6 +613,7 @@ by customize `cppcm-compile-list'."
   (let (dirs )
     (when buffer-file-name
       (setq dirs (cppcm-get-dirs))
+      (if cppcm-debug (message "(cppcm-get-dirs)=%s" dirs))
       (cond
        ((car dirs)
         ;; looks normal, we find buid-dir and soure-dir
