@@ -4,7 +4,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake Flycheck
-;; Version: 0.4.20
+;; Version: 0.4.21
 
 ;; This file is not part of GNU Emacs.
 
@@ -47,7 +47,7 @@
   :group 'cpputils-cmake)
 
 (defvar cppcm-cmake-target-regex
-  "^\s*[^#]*\s*\\(add_\\(?:executable\\|library\\)\\)\s*(\\([^\s]+\\)"
+  "^\s*[^#]*\s*\\(add_executable\\|add_library\\)\s*(\s*\\([^\s]+\\)"
   "Regex for matching a CMake target definition")
 
 (defvar cppcm-cmake-exe-regex
@@ -334,6 +334,7 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
     (when cppcm-debug
       (message "cppcm-guess-exe-full-path: tgt=%s" tgt)
       (message "cppcm-guess-exe-full-path: exe-dir=%s" exe-dir)
+      (message "cppcm-guess-exe-full-path: cppcm-cmake-target-regex=%s" cppcm-cmake-target-regex)
       (message "cppcm-guess-exe-full-path: cppcm-cmake-exe-regex=%s" cppcm-cmake-exe-regex)
       (message "cppcm-guess-exe-full-path: base-exe-name=%s" base-exe-name)
       )
@@ -361,9 +362,10 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
        (t (setq p nil))
        )
       )
+
     (if cppcm-debug (message "cppcm-guess-exe-full-path: p=%s" p))
-    p
-    ))
+
+    p))
 
 (defun cppcm-get-exe-dir-path-current-buffer ()
   (file-name-directory (cppcm-get-exe-path-current-buffer))
@@ -580,7 +582,7 @@ Require the project be compiled successfully at least once."
 ;;;###autoload
 (defun cppcm-version ()
   (interactive)
-  (message "0.4.20"))
+  (message "0.4.21"))
 
 ;;;###autoload
 (defun cppcm-compile (&optional prefix)

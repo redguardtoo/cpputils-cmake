@@ -1,4 +1,4 @@
-* cpputils-cmake.el (v0.4.20)
+* cpputils-cmake.el (v0.4.21)
 cpputils-cmake gives you *perfect* syntax check (Flymake) and IntelliSense/code-completion if you use [[http://www.cmake.org][CMake]].
 
 It does all the dirty setup *automatically* for following plugins and commands,
