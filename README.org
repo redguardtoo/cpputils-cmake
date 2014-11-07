@@ -13,12 +13,12 @@ It does all the dirty setup *automatically* for following plugins and commands,
 
 Please note cpputils-cmake is *independent* on those plugins. Only CMake is required.
 * Install
-** easy way
+** Easy way
 cpputils-cmake is available at [[https://github.com/milkypostman/melpa]].
 
 The best way is using Emacs package manager.
 
-** manual way
+** Manual way
 Download and place cpputils-cmake.el somewhere (say ~/.emacs/lisp), add below code into your .emacs:
 #+BEGIN_SRC lisp
 (add-to-list 'load-path "~/.emacs.d/lisp/")
@@ -61,12 +61,12 @@ add_executable(${TGT} ${SOURCES})
 The executable's name will be "hello-proj1-a1-a2".
 
 * One minute step by step tutorial
-** one line bash to create "hello" project
+** One line bash to create "hello" project
 #+BEGIN_SRC sh
 mkdir -p hello/src;printf "#include <stdio.h>\nint main(void) {\nprintf(\"hello world\");\nreturn 0;\n}" > hello/src/main.cpp;printf "cmake_minimum_required(VERSION 2.6)\nadd_executable(main main.cpp)" > hello/src/CMakeLists.txt
 #+END_SRC
 
-** use cmake as usual
+** Use cmake as usual
 Please note you need run "Make" at least once before using cpputils-cmake:
 #+BEGIN_SRC sh
 mkdir hello/build;cd hello/build;cmake ../src;make clean;make
@@ -77,7 +77,7 @@ If you use another directory name like "mybuild" instead of "build", you must ad
 (setq cppcm-build-dirname "mybuild")
 #+END_SRC
 
-** flymake
+** Flymake
 Open C++ file. Run "M-x flymake-mode". Please note all commands are available *ONLY when you editing/debugging C/C++ code!*
 
 Now typing some random C++ code and watch the real time hint on your syntax errors.
@@ -86,9 +86,9 @@ If you don't want to use flymake, you can tell cpputils-cmake NOT to create Make
 #+BEGIN_SRC elisp
 (setq cppcm-write-flymake-makefile nil)
 #+END_SRC
-** flycheck
+** Flycheck
 See [[https://github.com/flycheck/flycheck]] for flycheck setup. No setup needed here.
-** compile
+** Compile
 Compile the program: `M-x compile`
 
 The command line displayed in minibuffer is `make -C ~/your-projects-blah-blah/hello/build`
@@ -96,24 +96,24 @@ The command line displayed in minibuffer is `make -C ~/your-projects-blah-blah/h
 BTW, you can also `M-x cppcm-compile` to compile the current excutable only.
 
 You can see the actual command displayed in minibuffer is `make -C ~/your-project-blah-blah/hello/build/sub-project-dir-if-your-are-editing-its-cpp-file`
-** start gdb
+** Start gdb
 Press hotkey `C-c C-g` (suppose you've copied my configuration from previous section).
 
 You can see the gud-gdb starts and the executable "~/your-projects-blah-blah/hello/build/main" is loaded automatically.
 
-** auto-complete & auto-complete-clang (OPTIONAL)
+** Auto-complete & auto-complete-clang (OPTIONAL)
 Use them as usual. You can see that the Intellisense/auto-complete is more precise.
 
-** company-mode (OPTIONAL)
+** Company-mode (OPTIONAL)
 Use them as usual. You can see that the Intellisense/auto-complete is more precise.
 
-** open header file
+** Open header file
 Press the hotkey `C-x C-o` or `M-x ff-find-other-file`. The corresponding header is opened correctly.
 
 This is the default feature of Emacs. What cpputils-cmake does is to set up the directories of those header files for you automatically so that the header files could be found by Emacs.
 
 * Tips
-** avoid scanning when opening system header files
+** Avoid scanning when opening system header files
 cpputils-cmake scanning is light weight enough so below code is *optional*:
 #+BEGIN_SRC elisp
 (add-hook 'c-mode-common-hook
@@ -124,7 +124,7 @@ cpputils-cmake scanning is light weight enough so below code is *optional*:
                     (cppcm-reload-all))
               )))
 #+END_SRC
-** full path of executable to build
+** Get executable's full path of executable to build
 The command "cppcm-get-exe-path-current-buffer" will copy current executable into kill ring AND OS clipboard.
 
 You need install `xsel` under Linux to support OS clipboard.
@@ -133,7 +133,7 @@ This could be useful if you need access the executable's directory.
 
 You can yank (paste) the full path to eshell or minibuffer and press "M-backspace" to get the directory name.
 
-** reload cpputils-cmake
+** Reload cpputils-cmake
 You can always `M-x cppcm-reload-all` at any time.
 
 There is also `cppcm-reload-all-hook` which will be called after `cppcm-reload-all`. This give you a chance to tweak or override the setup.
@@ -147,13 +147,48 @@ Here is the list of global variables third party plugins will use (and you can t
 | flycheck-clang-include-path             | flycheck            |
 | semantic-dependency-system-include-path | semantic            |
 
-** compile only current target
+** Compile only current target
 "M-x cppcm-compile".
 
 Please press "C-h v cppcm-compile-list" for other compile options.
 
-** make clean && make
+** Make clean && make
 "M-x cppcm-recompile"
+
+** Target output directory is not default value
+For example, if the CMakeLists.txt contains something like this:
+#+begin_src cmake
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
+#+end_src
+
+cpputils-cmake cannot find the target (executable or library).
+
+It will then call the variable cppcm-get-executable-full-path-callback which could be a function object.
+
+Here is a sample:
+#+begin_src elisp
+(setq cppcm-get-executable-full-path-callback
+      (lambda (path type tgt-name)
+        ;; path is the supposed-to-be target's full path
+        ;; type is either add_executabe or add_library
+        ;; tgt-name is the target to built. The target's file extension is stripped
+        (message "cppcm-get-executable-full-path-callback called => %s %s %s" path type tgt-name)
+        (let ((dir (file-name-directory path))
+              (file (file-name-nondirectory path)))
+          (cond
+           ((string= type "add_executable")
+            (setq path (concat dir "bin/" file)))
+           ;; for add_library
+           (t (setq path (concat dir "lib/" file)))
+           ))
+        ;; return the new path
+        (message "cppcm-get-executable-full-path-callback called => path=%s" path)
+        path))
+#+end_src
+
+You can insert above code into ~/.emacs!
 
 * Credits
 - [[https://github.com/dojeda][David Ojeda (AKA dojeda)]] developed the algorithm to locate the top level project

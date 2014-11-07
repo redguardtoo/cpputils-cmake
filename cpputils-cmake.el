@@ -1,6 +1,7 @@
 ;;; cpputils-cmake.el --- Easy realtime C++ syntax check and IntelliSense with CMake.
 
 ;; Copyright (C) 2014 Chen Bin
+
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake Flycheck
@@ -33,14 +34,34 @@
   :type 'hook
   :group 'cpputils-cmake)
 
-(defvar cppcm-extra-preprocss-flags-from-user nil "Value example: (\"-I/usr/src/include\" \"-I./inc\" \"-DNDEBUG\").")
+(defvar cppcm-get-executable-full-path-callback nil
+  "User defined function to get correct path of executabe.
+Sample definition:
+(setq cppcm-get-executable-full-path-callback
+      (lambda (path type tgt-name)
+        (message \"cppcm-get-executable-full-path-callback called => %s %s %s\" path type tgt-name)
+        ;; path is the supposed-to-be target's full path
+        ;; type is either add_executabe or add_library
+        ;; tgt-name is the target to built. The target's file extension is stripped
+        (let ((dir (file-name-directory path))
+              (file (file-name-nondirectory path)))
+          (cond
+           ((string= type \"add_executable\")
+            (setq path (concat dir \"bin/\" file)))
+           ;; for add_library
+           (t (setq path (concat dir \"lib/\" file)))
+            ))
+          path))")
+
+(defvar cppcm-extra-preprocss-flags-from-user nil
+  "Value example: (\"-I/usr/src/include\" \"-I./inc\" \"-DNDEBUG\").")
 
 (defvar cppcm-build-dir nil "The full path of build directory")
 (defvar cppcm-src-dir nil "The full path of root source directory")
 (defvar cppcm-include-dirs nil "Value example: (\"-I/usr/src/include\")")
 (defvar cppcm-preprocess-defines nil "Value example: (\"-DNDEBUG\" \"-D_WXGTK_\")")
 
-(defvar cppcm-hash (make-hash-table :test 'equal))
+(defvar cppcm-hash nil)
 (defconst cppcm-prog "cpputils-cmake")
 (defcustom cppcm-makefile-name "Makefile" "The filename for cppcm makefiles"
   :type 'string
@@ -48,10 +69,6 @@
 
 (defvar cppcm-cmake-target-regex
   "^\s*[^#]*\s*\\(add_executable\\|add_library\\)\s*(\s*\\([^\s]+\\)"
-  "Regex for matching a CMake target definition")
-
-(defvar cppcm-cmake-exe-regex
-  "^\\(add_executable\\)$"
   "Regex for matching a CMake target definition")
 
 (defcustom cppcm-write-flymake-makefile t "Toggle cpputils-cmake writing Flymake Makefiles"
@@ -111,7 +128,7 @@ For example:
 (defun cppcm-parent-dir (d) (file-name-directory (directory-file-name d)))
 
 (defun cppcm--query-var-from-lines (lines REGEX)
-  (if cppcm-debug (message "cppcm-proj-max-dir-level called"))
+  (if cppcm-debug (message "cppcm--query-var-from-lines called"))
   (let (v)
     (catch 'brk
       (dolist (l lines)
@@ -194,7 +211,7 @@ For example:
 (defun cppcm-get-dirs ()
   "search from current directory to the parent to locate build directory
 return (found possible-build-dir build-dir src-dir)"
-  (if cppcm-debug "cppcm-get-dirs called")
+  (if cppcm-debug (message "cppcm-get-dirs called"))
   (let ((crt-proj-dir (file-name-as-directory (file-name-directory buffer-file-name)))
         (i 0)
         found
@@ -224,7 +241,7 @@ return (found possible-build-dir build-dir src-dir)"
              (setq cppcm-src-dir src-dir)
              ))
     (setq rlt (list found possible-build-dir build-dir src-dir))
-    (if cppcm-debug "(cppcm-get-dirs)=%s" rlt)
+    (if cppcm-debug (message "(cppcm-get-dirs)=%s" rlt))
     rlt))
 
 (defun cppcm--contains-variable-name (VALUE start)
@@ -330,6 +347,24 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
     v
   ))
 
+(defun cppcm--find-physical-lib-file (base-exe-name)
+  "a library binary file could have different file extension"
+  (if cppcm-debug (message "cppcm--find-physical-lib-file called => %s" base-exe-name))
+  (let (p)
+    (if base-exe-name
+        (cond
+         ((file-exists-p (concat base-exe-name ".a"))
+          (setq p (concat base-exe-name ".a")))
+
+         ((file-exists-p (concat base-exe-name ".so"))
+          (setq p (concat base-exe-name ".so")))
+
+         ((file-exists-p (concat base-exe-name ".dylib"))
+          (setq p (concat base-exe-name ".dylib")))
+         ))
+    (if cppcm-debug (message "cppcm--find-physical-lib-file return =%s" p))
+    p))
+
 ;; I don't consider the win32 environment because cmake support Visual Studio
 ;; @return full path of executable and we are sure it exists
 (defun cppcm-guess-exe-full-path (exe-dir tgt)
@@ -337,43 +372,45 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
   (let (p
         base-exe-name
         (type (car tgt))
-        (e (cadr tgt)))
+        (tgt-name (cadr tgt)))
 
-    (setq base-exe-name (concat exe-dir "lib" e))
+    (setq base-exe-name (concat exe-dir "lib" tgt-name))
+
     (when cppcm-debug
+      (message "cppcm-guess-exe-full-path: type=%s" type)
       (message "cppcm-guess-exe-full-path: tgt=%s" tgt)
       (message "cppcm-guess-exe-full-path: exe-dir=%s" exe-dir)
       (message "cppcm-guess-exe-full-path: cppcm-cmake-target-regex=%s" cppcm-cmake-target-regex)
-      (message "cppcm-guess-exe-full-path: cppcm-cmake-exe-regex=%s" cppcm-cmake-exe-regex)
-      (message "cppcm-guess-exe-full-path: base-exe-name=%s" base-exe-name)
-      )
+      (message "cppcm-guess-exe-full-path: base-exe-name=%s" base-exe-name))
 
-    (if (string-match cppcm-cmake-exe-regex type)
+    (if (string-match "^\\(add_executable\\)$" type)
+        ;; handle add_executable
         (progn
           ;; application bundle on OS X?
-          (setq p (concat exe-dir e (if (eq system-type 'darwin) (concat ".app/Contents/MacOS/" e))))
+          (setq p (concat exe-dir tgt-name (if (eq system-type 'darwin) (concat ".app/Contents/MacOS/" tgt-name))))
           ;; maybe the guy on Mac prefer raw application? try again.
-          (if (not (file-exists-p p)) (setq p (concat exe-dir e)))
-          (if (not (file-exists-p p)) (setq p nil))
-          )
+          (if (not (file-exists-p p))
+              (setq p (concat exe-dir tgt-name)))
+          (when (not (file-exists-p p))
+            ;; Turn to the customer for help
+            (when cppcm-get-executable-full-path-callback
+              (if cppcm-debug (message "cppcm-get-executable-full-path-callback will be called! => %s %s %s" p type tgt-name))
+              (setq p (funcall cppcm-get-executable-full-path-callback p type tgt-name))
+              (when (not (file-exists-p p))
+                (message "Executable missing! I give up! %" p)
+                (setq p nil)))
+            ))
 
-
-      (cond
-       ((file-exists-p (concat base-exe-name ".a"))
-        (setq p (concat base-exe-name ".a")))
-
-       ((file-exists-p (concat base-exe-name ".so"))
-        (setq p (concat base-exe-name ".so")))
-
-       ((file-exists-p (concat base-exe-name ".dylib"))
-        (setq p (concat base-exe-name ".dylib")))
-
-       (t (setq p nil))
-       )
-      )
-
-    (if cppcm-debug (message "cppcm-guess-exe-full-path: p=%s" p))
-
+      ;; handle add_library
+      (unless (setq p (cppcm--find-physical-lib-file base-exe-name))
+        (when cppcm-get-executable-full-path-callback
+          (if cppcm-debug (message "cppcm-get-executable-full-path-callback will be called! => %s %s %s" base-exe-name type tgt-name))
+          (setq p (funcall cppcm-get-executable-full-path-callback
+                            base-exe-name
+                            type
+                            tgt-name))
+          (setq p (cppcm--find-physical-lib-file p))
+          )))
     p))
 
 (defun cppcm-get-exe-dir-path-current-buffer ()
@@ -384,8 +421,7 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
   "Find information for current executable. My create Makefile for flymake.
 Require the project be compiled successfully at least once."
 
-  (if cppcm-debug (message "cppcm-handle-one-executable called")
-    root-src-dir build-dir src-dir tgt)
+  (if cppcm-debug (message "cppcm-handle-one-executable called => %s %s %s %s" root-src-dir build-dir src-dir tgt))
 
   (let (flag-make
         base-dir
@@ -485,6 +521,7 @@ Require the project be compiled successfully at least once."
 
         (cppcm-handle-one-executable root-src-dir build-dir src-dir tgt))
       )
+
     (dolist (f (directory-files base))
       (setq subdir (concat (file-name-as-directory base) f))
       (when (and (file-directory-p subdir)
@@ -518,7 +555,7 @@ Require the project be compiled successfully at least once."
       (setq i (+ i 1)))
     (unless found
       (setq dir nil))
-    (if cppcm-debug (message "dir=%s" dir))
+    (if cppcm-debug (message "cppcm--guess-dir-containing-cmakelists-dot-txt: dir=%s" dir))
     dir))
 
 ;;;###autoload
@@ -553,6 +590,7 @@ Require the project be compiled successfully at least once."
 
     (when dir
       (setq c-compiling-flags-list (gethash (cppcm--flags-hashkey dir) cppcm-hash))
+
       ;; please note the "-I" are always wrapped by double quotes
       ;; for example: -I"/usr/src/include"
       (if cppcm-debug (message "c-compiling-flags-list=%s" c-compiling-flags-list))
@@ -565,14 +603,21 @@ Require the project be compiled successfully at least once."
         (setq cppcm-include-dirs (delq nil
                                        (mapcar (lambda (str)
                                                  (when str
-                                                     (setq str (substring str 0 (- (length str) 1)))
-                                                     ;; well, make sure the include is absolute path containing NO dot character
-                                                     (concat "-I\"" (file-truename str) "\"")
+                                                   (setq str (substring str 0 (- (length str) 1)))
+                                                   ;; well, make sure the include is absolute path containing NO dot character
+                                                   (concat "-I\"" (file-truename str) "\"")
                                                    ))
                                                cppcm-include-dirs))
               ))
-      (setq cppcm-preprocess-defines (if c-defines (split-string c-defines "\s+" t)))
-      )
+
+      ;; always add PWD into include directories, to make workflow continue
+      ;; so cppcm-include-dirs could not be nil in most cased!
+      (when (buffer-file-name)
+        (let ((crt-dir (file-name-directory (buffer-file-name))))
+          (when (and crt-dir (not (member crt-dir cppcm-include-dirs)))
+            (push (concat "-I\"" crt-dir "\"") cppcm-include-dirs))))
+
+      (setq cppcm-preprocess-defines (if c-defines (split-string c-defines "\s+" t))))
     ))
 
 (defun cppcm--fix-include-path (l)
@@ -625,9 +670,15 @@ by customize `cppcm-compile-list'."
 ;;;###autoload
 (defun cppcm-reload-all ()
   "reload and reproduce everything"
+  (if cppcm-debug (message "cppcm-reload-all called"))
   (interactive)
   (let (dirs )
     (when buffer-file-name
+
+      (setq cppcm-hash nil)
+      (unless cppcm-hash
+        (setq cppcm-hash (make-hash-table :test 'equal)))
+
       (setq dirs (cppcm-get-dirs))
       (if cppcm-debug (message "(cppcm-get-dirs)=%s" dirs))
       (cond
@@ -703,10 +754,9 @@ by customize `cppcm-compile-list'."
                    (dolist (x inc-dirs) (add-to-list 'cc-search-directories x))
                    ))))
   (when (and cppcm-build-dir (file-exists-p (concat cppcm-build-dir "CMakeCache.txt")))
-    (setq compile-command (concat "make -C \"" cppcm-build-dir "\""))
-    )
-  (run-hook-with-args 'cppcm-reload-all-hook)
-  )
+    (setq compile-command (concat "make -C \"" cppcm-build-dir "\"")))
+
+  (run-hook-with-args 'cppcm-reload-all-hook))
 
 (provide 'cpputils-cmake)
 
