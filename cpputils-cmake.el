@@ -4,7 +4,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake Flycheck
-;; Version: 0.4.21
+;; Version: 0.4.22
 
 ;; This file is not part of GNU Emacs.
 
@@ -302,20 +302,29 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
   (replace-regexp-in-string (concat "^" trim-str) "" (replace-regexp-in-string (concat trim-str "$") "" string)))
 
 (defun cppcm-trim-compiling-flags (cppflags)
+  (if cppcm-debug (message "cppcm-trim-compiling-flags called => %s" cppflags))
   (let (tks
         (next-tk-is-included-dir nil)
         (v ""))
     ;; consider following sample:
     ;; CXX_FLAGS = -I/Users/cb/wxWidgets-master/include -I"/Users/cb/projs/space nox"    -Wno-write-strings
     (setq tks (split-string (cppcm-trim-string cppflags "[ \t\n]*") "\s+-" t))
+
+    (if cppcm-debug (message "tks=%s" tks))
     ;; rebuild the arguments in one string, append double quote string
     (dolist (tk tks v)
       (cond
+       ((string= (substring tk 0 2) "-I")
+        (setq v (concat v " -I\"" (substring tk 2 (length tk)) "\"")))
+
        ((string= (substring tk 0 1) "I")
         (setq v (concat v " -I\"" (substring tk 1 (length tk)) "\"")))
 
        ((and (> (length tk) 8) (string= (substring tk 0 8) "isystem "))
         (setq v (concat v " -I\"" (substring tk 8 (length tk)) "\"")))
+
+       ((and (> (length tk) 9) (string= (substring tk 0 9) "-isystem "))
+        (setq v (concat v " -I\"" (substring tk 9 (length tk)) "\"")))
        ))
 
     v
@@ -417,6 +426,11 @@ Require the project be compiled successfully at least once."
         (setq is-c (if (string= (match-string 1 queried-c-flags) "C_FLAGS") "C" "CXX"))
         (setq c-flags (cppcm-trim-compiling-flags (match-string 2 queried-c-flags)))
         (setq queried-c-defines (cppcm-query-match-line flag-make "\s*\\(CX\\{0,2\\}_DEFINES\\)\s*=\s*\\(.*\\)"))
+        (when cppcm-debug
+          (message "queried-c-flags=%s" queried-c-flags)
+          (message "is-c=%s" is-c)
+          (message "c-flags=%s" c-flags)
+          (message "queried-c-defines=%s" queried-c-flags))
 
         ;; just what ever preprocess flag we got
         (setq c-defines (match-string 2 queried-c-defines))
@@ -582,7 +596,7 @@ Require the project be compiled successfully at least once."
 ;;;###autoload
 (defun cppcm-version ()
   (interactive)
-  (message "0.4.21"))
+  (message "0.4.22"))
 
 ;;;###autoload
 (defun cppcm-compile (&optional prefix)
