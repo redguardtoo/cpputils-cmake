@@ -54,7 +54,7 @@ A sample CMakeLists.txt we can handle:
 project(proj1)
 set(VAR2 "a2")
 set(VAR1 a1-${VAR2})
-set(TGT hello-${PROJECT_NAME}-${VAR1}}")
+set(TGT hello-${PROJECT_NAME}-${VAR1}")
 add_executable(${TGT} ${SOURCES})
 #+END_SRC
 
