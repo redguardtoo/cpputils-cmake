@@ -25,7 +25,7 @@ Download and place cpputils-cmake.el somewhere (say ~/.emacs/lisp), add below co
 (require 'cpputils-cmake)
 #+END_SRC
 
-* Setup
+* Usage
 Insert below code into your .emacs:
 #+BEGIN_SRC elisp
 (add-hook 'c-mode-common-hook
@@ -42,47 +42,24 @@ Insert below code into your .emacs:
 (setq cppcm-extra-preprocss-flags-from-user '("-I/usr/src/linux/include" "-DNDEBUG"))
 #+END_SRC
 
-*WARNING*:
-cpputils-cmake assumes that CMakeLists.txt contains a rule to create executable.
+Then follow this work flow:
+- Make sure the build directory has the same name as value of *cppcm-build-dirname*. It is "build" by default. Make sure the build is located somewhere in the directory hierarchy from C++ file.
+- Go to build directory to run cmake and make
+- *Done!* Enjoy programming in Emacs as usual.
 
-The rule is either "add_executable" or "add_library".
+* Plugins (OPTIONAL)
+Let's start by creating a "hello world" C++ project.
 
-Included file and macro in CMakeLists.txt will be *ignored*.
-
-A sample CMakeLists.txt we can handle:
-#+BEGIN_SRC cmake
-project(proj1)
-set(VAR2 "a2")
-set(VAR1 a1-${VAR2})
-set(TGT hello-${PROJECT_NAME}-${VAR1}")
-add_executable(${TGT} ${SOURCES})
-#+END_SRC
-
-The executable's name will be "hello-proj1-a1-a2".
-
-* One minute step by step tutorial
-** One line bash to create "hello" project
+Execute below command in shell:
 #+BEGIN_SRC sh
 mkdir -p hello/src;printf "#include <stdio.h>\nint main(void) {\nprintf(\"hello world\");\nreturn 0;\n}" > hello/src/main.cpp;printf "cmake_minimum_required(VERSION 2.6)\nadd_executable(main main.cpp)" > hello/src/CMakeLists.txt
 #+END_SRC
-
-** Use cmake as usual
-Please note you need run "Make" at least once before using cpputils-cmake:
-#+BEGIN_SRC sh
-mkdir hello/build;cd hello/build;cmake ../src;make clean;make
-#+END_SRC
-
-If you use another directory name like "mybuild" instead of "build", you must add following line into your .emacs:
-#+BEGIN_SRC elisp
-(setq cppcm-build-dirname "mybuild")
-#+END_SRC
-
 ** Flymake
-Open C++ file. Run "M-x flymake-mode". Please note all commands are available *ONLY when you editing/debugging C/C++ code!*
+Open C++ file. "M-x flymake-mode".
 
-Now typing some random C++ code and watch the real time hint on your syntax errors.
+Type some random C++ code and watch the real time hint on your syntax errors.
 
-If you don't want to use flymake, you can tell cpputils-cmake NOT to create Makefile for flyemake by inserting below code into ~/.emacs:
+If you don't like flymake, you can tell cpputils-cmake NOT to create Makefile for flyemake by inserting below code into ~/.emacs:
 #+BEGIN_SRC elisp
 (setq cppcm-write-flymake-makefile nil)
 #+END_SRC
@@ -112,7 +89,7 @@ Press the hotkey `C-x C-o` or `M-x ff-find-other-file`. The corresponding header
 
 This is the default feature of Emacs. What cpputils-cmake does is to set up the directories of those header files for you automatically so that the header files could be found by Emacs.
 
-* Tips
+* Advanced Tips
 ** Avoid scanning when opening system header files
 cpputils-cmake scanning is light weight enough so below code is *optional*:
 #+BEGIN_SRC elisp
@@ -155,7 +132,7 @@ Please press "C-h v cppcm-compile-list" for other compile options.
 ** Make clean && make
 "M-x cppcm-recompile"
 
-** Target output directory is not default value
+** Manually specify the binary's path if you modify the default target output directory
 For example, if the CMakeLists.txt contains something like this:
 #+begin_src cmake
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
@@ -189,6 +166,24 @@ Here is a sample:
 #+end_src
 
 You can insert above code into ~/.emacs!
+
+** About macro and included cmake file
+cpputils-cmake assumes that CMakeLists.txt contains a rule to create executable.
+
+*The rule is either "add_executable" or "add_library"*.
+
+Included file and macro in CMakeLists.txt will be *ignored*.
+
+A sample CMakeLists.txt we can handle:
+#+BEGIN_SRC cmake
+project(proj1)
+set(VAR2 "a2")
+set(VAR1 a1-${VAR2})
+set(TGT hello-${PROJECT_NAME}-${VAR1}")
+add_executable(${TGT} ${SOURCES})
+#+END_SRC
+
+The executable's name will be "hello-proj1-a1-a2".
 
 * Credits
 - [[https://github.com/dojeda][David Ojeda (AKA dojeda)]] developed the algorithm to locate the top level project
