@@ -331,7 +331,7 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
     ;; rebuild the arguments in one string, append double quote string
     (dolist (tk tks v)
       (cond
-       ((and (> (length tk) 1) (string= (substring tk 0 2)) "-I")
+       ((and (> (length tk) 1) (string= (substring tk 0 2) "-I"))
         (setq v (concat v " -I\"" (substring tk 2 (length tk)) "\"")))
 
        ((string= (substring tk 0 1) "I")
