@@ -83,8 +83,8 @@ You also need install auto-complete-clang.
 Press the hotkey `C-x C-o` or `M-x ff-find-other-file`. The corresponding header is opened.
 
 * FAQ
-** Avoid scanning when opening system header files
-cpputils-cmake scanning is light weight enough so below code is *optional*:
+** Avoid scanning system header files
+Scanning is light weight enough so below code is *optional*:
 #+BEGIN_SRC elisp
 (add-hook 'c-mode-common-hook
           (lambda ()
@@ -104,11 +104,11 @@ This could be useful if you need access the executable's directory.
 You can yank (paste) the full path to eshell or minibuffer and press "M-backspace" to get the directory name.
 
 ** Reload cpputils-cmake
-You can always `M-x cppcm-reload-all` at any time.
+You can always `M-x cppcm-reload-all` any time.
 
-There is also `cppcm-reload-all-hook` which will be called after `cppcm-reload-all`. This give you a chance to tweak or override the setup.
+There is also `cppcm-reload-all-hook` which will be called after `cppcm-reload-all`. This give you a chance to tweak or override the setup *if and only if* you are Emacs Lisp expert. Most users *don't* need tweak these global variables.
 
-Here is the list of global variables third party plugins will use (and you can tweak):
+Here is the list of global variables third party plugins use:
 | variable name                           | plugin              |
 |-----------------------------------------+---------------------|
 | ac-clang-flags                          | auto-complete-clang |

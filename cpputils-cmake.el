@@ -11,13 +11,21 @@
 
 ;; This file is free software (GPLv3 License)
 
-;; Set up:
+;; Commentary:
+
+;; Ths package provides `cppcm-reload-all', you can call
+;; it IF AND ONLY IF you are editing C/C++ file.
 ;;
+;; Example setup:
 ;;  (add-hook 'c-mode-common-hook (lambda ()
 ;;              (if (derived-mode-p 'c-mode 'c++-mode)
 ;;                  (cppcm-reload-all))))
 ;;
-;; https://github.com/redguardtoo/cpputils-cmake/blob/master/README.org for use cases
+;; Above setup is enough for 99% use cases. You don't need
+;; do anything from now on.
+;;
+;; Advanced user can check below documentation:
+;; https://github.com/redguardtoo/cpputils-cmake/blob/master/README.org
 
 ;;; Code:
 
