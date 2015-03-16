@@ -46,9 +46,8 @@ Insert below code into your .emacs:
 #+END_SRC
 
 Quick start:
-- The build directory should have the *same name as value of cppcm-build-dirname*. It is "build" by default. Make sure the build is located somewhere in the directory hierarchy from C++ file.
-- Go to build directory to run cmake and make
-- *Done!* Enjoy programming in Emacs as usual.
+- Step 1, The build directory should have the *same name as value of cppcm-build-dirname*. It is "build" by default. Make sure the build is located somewhere in the directory hierarchy from C++ file
+- Step 2, Go to build directory to *run cmake and make at least once!*
 
 * Demo (OPTIONAL)
 Let's start by creating a "hello world" C++ project:
@@ -104,7 +103,7 @@ This could be useful if you need access the executable's directory.
 You can yank (paste) the full path to eshell or minibuffer and press "M-backspace" to get the directory name.
 
 ** Reload cpputils-cmake
-You can always `M-x cppcm-reload-all` any time.
+You can always `M-x cppcm-reload-all` any time *in C/C++ files*.
 
 There is also `cppcm-reload-all-hook` which will be called after `cppcm-reload-all`. This give you a chance to tweak or override the setup *if and only if* you are Emacs Lisp expert. Most users *don't* need tweak these global variables.
 
