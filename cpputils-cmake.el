@@ -754,6 +754,9 @@ by customize `cppcm-compile-list'."
     (setq company-c-headers-path-system flycheck-clang-include-path)
     (if cppcm-debug (message "company-c-headers-path-system=%s" company-c-headers-path-system))
 
+    ;; irony compile-commands-path
+    (irony-cdb-json-add-compile-commands-path (cppcm-src-dir (concat (cppcm-build-dir "compile_commands.json"))))
+
     ;; set cc-search-directories automatically, so ff-find-other-file will succeed
     (add-hook 'ff-pre-find-hook
               '(lambda ()
