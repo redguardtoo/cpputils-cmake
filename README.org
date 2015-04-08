@@ -1,4 +1,4 @@
-* cpputils-cmake.el (v0.5.0)
+* cpputils-cmake.el (v0.5.1)
 *Perfect* syntax check (Flymake) and code-completion if you use [[http://www.cmake.org][CMake]].
 
 cpputils-cmake does all the dirty setup *automatically* for following plugins and commands,
@@ -9,6 +9,7 @@ cpputils-cmake does all the dirty setup *automatically* for following plugins an
 - [[https://github.com/company-mode/company-mode][company-mode]]
 - [[https://github.com/randomphrase/company-c-headers][company-c-headers]]
 - [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Semantic.html][semantic]]
+- [[https://github.com/Sarcasm/irony-mode][irony-mode]]
 - [[http://www.emacswiki.org/emacs/CompileCommand]["M-x compile"]]
 - "M-x ff-find-other-file" (if you press `C-x C-o` in C/C++ file, ff-find-other-file will open *correct* header file under cursor)
 
@@ -188,6 +189,7 @@ Insert below code into ~/.emacs:
 - [[https://github.com/erreina][Ernesto Rodriguez Reina (AKA erreina)]] added the command "cppcm-recompile"
 - [[http://chachi.github.io/][Jack Morrison (AKA chachi)]] added support for [[https://github.com/flycheck/flycheck][Flycheck]]
 - [[https://github.com/JP-Ellis][Joshua Ellis (AKA JP-Ellis)]] added support for [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Semantic.html][semantic]]
+- [[https://github.com/aport][aport]] added support for [[https://github.com/Sarcasm/irony-mode][irony-mode]]
 * Bug Report
 Check [[https://github.com/redguardtoo/cpputils-cmake]].
 

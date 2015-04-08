@@ -5,7 +5,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake Flycheck
-;; Version: 0.5.0
+;; Version: 0.5.1
 
 ;; This file is not part of GNU Emacs.
 
@@ -649,7 +649,7 @@ Require the project be compiled successfully at least once."
 ;;;###autoload
 (defun cppcm-version ()
   (interactive)
-  (message "0.5.0"))
+  (message "0.5.1"))
 
 ;;;###autoload
 (defun cppcm-compile (&optional prefix)
@@ -753,6 +753,10 @@ by customize `cppcm-compile-list'."
     ;; company-c-headers-path-system
     (setq company-c-headers-path-system flycheck-clang-include-path)
     (if cppcm-debug (message "company-c-headers-path-system=%s" company-c-headers-path-system))
+
+    ;; irony compile-commands-path
+    (if (fboundp 'irony-cdb-json-add-compile-commands-path)
+        (irony-cdb-json-add-compile-commands-path cppcm-src-dir (concat cppcm-build-dir "compile_commands.json")))
 
     ;; set cc-search-directories automatically, so ff-find-other-file will succeed
     (add-hook 'ff-pre-find-hook
