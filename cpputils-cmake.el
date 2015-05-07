@@ -21,11 +21,13 @@
 ;;              (if (derived-mode-p 'c-mode 'c++-mode)
 ;;                  (cppcm-reload-all))))
 ;;
-;; Above setup is enough for 99% use cases. You don't need
-;; do anything from now on.
+;; Above setup is enough for 99% use cases.
+;; Please follow below steps before using Emacs:
+;;   Step 1, run "cmake" to create out build directory
+;;   Step 2, run "make" to compile SUCCESSFULLY in tbuild directory
 ;;
-;; Advanced user can check below documentation:
-;; https://github.com/redguardtoo/cpputils-cmake/blob/master/README.org
+;; BTW, you can "M-x cppcm-reload-all" anytime to re-scan the source,
+;; Check https://github.com/redguardtoo/cpputils-cmake/ for more tips
 
 ;;; Code:
 
@@ -129,7 +131,8 @@ For example:
 
 (defun cppcm-readlines (FILE)
     "Return a list of lines of a file at FILE."
-      (with-temp-buffer
+
+    (with-temp-buffer
             (insert-file-contents FILE)
                 (split-string (buffer-string) "\n" t)))
 
@@ -149,11 +152,11 @@ For example:
     v))
 
 (defun cppcm-query-var (FILE REGEX)
-  "return the value `set (var value)'"
+  "Return the value `set (var value)'"
   (cppcm--query-var-from-lines (cppcm-readlines FILE) REGEX))
 
 (defun cppcm-query-var-from-last-matched-line (f re)
-  "get the last matched line"
+  "Get the last matched line"
   (if cppcm-debug (message "cppcm-query-var-from-last-matched-line called"))
   (let (vlist lines)
     (setq lines (cppcm-readlines f))
@@ -581,7 +584,7 @@ Require the project be compiled successfully at least once."
           (cppcm-share-str exe-path)
           (message "%s => clipboard" exe-path)
           )
-      (message "executable missing! Please run 'M-x compile' at first.")
+      (message "Executable missing! Please run cmake and make in shell manullay at first.")
       )
     exe-path
     ))
@@ -635,13 +638,13 @@ Require the project be compiled successfully at least once."
                 l)))
 
 (defun cppcm-compile-in-current-exe-dir ()
-  "compile the executable/library in current directory."
+  "Compile the executable/library in current directory."
   (interactive)
   (setq compile-command (concat "make -C \"" (cppcm-get-exe-dir-path-current-buffer) "\""))
   (call-interactively 'compile))
 
 (defun cppcm-compile-in-root-build-dir ()
-  "compile in build directory"
+  "Compile in build directory"
   (interactive)
   (setq compile-command (concat "make -C \"" cppcm-build-dir "\""))
   (call-interactively 'compile))
@@ -653,7 +656,7 @@ Require the project be compiled successfully at least once."
 
 ;;;###autoload
 (defun cppcm-compile (&optional prefix)
-  "compile the executable/library in current directory,
+  "Compile the executable/library in current directory,
 default compile command or compile in the build directory.
 You can specify the sequence which compile is default
 by customize `cppcm-compile-list'."
@@ -677,7 +680,7 @@ by customize `cppcm-compile-list'."
 
 ;;;###autoload
 (defun cppcm-reload-all ()
-  "reload and reproduce everything"
+  "Reload and reproduce everything"
   (if cppcm-debug (message "cppcm-reload-all called"))
   (interactive)
   (let (dirs )
@@ -707,10 +710,10 @@ by customize `cppcm-compile-list'."
        ((nth 1 dirs)
         ;; build-dir is found, but flags in build-dir need be created
         ;; warn user.
-        (message "Please run cmake in %s at first" (nth 1 dirs))
+        (message "Please run cmake and make in %s at first" (nth 1 dirs))
         )
        (t
-        (message "Build directory is missing! Create it and run cmake in it.")))
+        (message "Build directory is missing! Create the directory, run cmake and make inside of it.")))
       )
     )
 

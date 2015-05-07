@@ -48,7 +48,7 @@ Insert below code into your .emacs:
 
 Quick start:
 - Step 1, The build directory should have the *same name as value of cppcm-build-dirname*. It is "build" by default. Make sure the build is located somewhere in the directory hierarchy from C++ file
-- Step 2, Go to build directory to *run cmake and make at least once!*
+- Step 2, Go to build directory to run cmake and make at least once. The compile should be *successful*!
 
 * Demo (OPTIONAL)
 Let's start by creating a "hello world" C++ project:
