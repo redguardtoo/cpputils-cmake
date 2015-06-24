@@ -5,7 +5,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake Flycheck
-;; Version: 0.5.1
+;; Version: 0.5.2
 
 ;; This file is not part of GNU Emacs.
 
@@ -425,8 +425,7 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
     p))
 
 (defun cppcm-get-exe-dir-path-current-buffer ()
-  (file-name-directory (cppcm-get-exe-path-current-buffer))
-  (cppcm-get-exe-path-current-buffer))
+  (file-name-directory (cppcm-get-exe-path-current-buffer)))
 
 (defun cppcm-handle-one-executable (root-src-dir build-dir src-dir tgt)
   "Find information for current executable. My create Makefile for flymake.
@@ -652,7 +651,7 @@ Require the project be compiled successfully at least once."
 ;;;###autoload
 (defun cppcm-version ()
   (interactive)
-  (message "0.5.1"))
+  (message "0.5.2"))
 
 ;;;###autoload
 (defun cppcm-compile (&optional prefix)

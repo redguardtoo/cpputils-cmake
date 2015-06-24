@@ -1,4 +1,4 @@
-* cpputils-cmake.el (v0.5.1)
+* cpputils-cmake.el (v0.5.2)
 *Perfect* syntax check (Flymake) and code-completion if you use [[http://www.cmake.org][CMake]].
 
 cpputils-cmake does all the dirty setup *automatically* for following plugins and commands,
@@ -50,6 +50,7 @@ Quick start:
 - Step 1, The build directory should have the *same name as value of cppcm-build-dirname*. It is "build" by default. Make sure the build is located somewhere in the directory hierarchy from C++ file
 - Step 2, Go to build directory to run cmake and make at least once. The compile should be *successful*!
 
+If your project don't use default path from CMake, check the section "Customize target path" in FAQ for the solution.
 * Demo (OPTIONAL)
 Let's start by creating a "hello world" C++ project:
 #+BEGIN_SRC sh
