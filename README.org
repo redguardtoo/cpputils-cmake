@@ -1,4 +1,7 @@
 * cpputils-cmake.el (v0.5.2)
+
+[[http://melpa.org/#/cpputils-cmake][file:http://melpa.org/packages/cpputils-cmake-badge.svg]] [[http://stable.melpa.org/#/cpputils-cmake][file:http://stable.melpa.org/packages/cpputils-cmake-badge.svg]]
+
 *Perfect* syntax check (Flymake) and code-completion if you use [[http://www.cmake.org][CMake]].
 
 cpputils-cmake does all the dirty setup *automatically* for following plugins and commands,
