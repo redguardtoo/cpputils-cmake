@@ -213,7 +213,7 @@ For example:
 ;; Please enlighten me if you have better result
 (defun cppcm-get-root-source-dir (d)
   (let (rlt)
-    (setq lt (cppcm-query-var-from-last-matched-line (concat d "CMakeCache.txt") "Project_SOURCE_DIR\:STATIC\=\\(.*\\)"))
+    (setq rlt (cppcm-query-var-from-last-matched-line (concat d "CMakeCache.txt") "Project_SOURCE_DIR\:STATIC\=\\(.*\\)"))
     (if (not rlt)
         (setq rlt (cppcm-query-var-from-last-matched-line (concat d "CMakeCache.txt") "[[:word:]]+_SOURCE_DIR\:STATIC\=\\(.*\\)")))
     rlt
