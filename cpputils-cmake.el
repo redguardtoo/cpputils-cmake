@@ -508,7 +508,6 @@ Require the project be compiled successfully at least once."
 
   (let (flag-make
         base-dir
-        hash-key
         mk
         cm
         exe-dir
@@ -516,7 +515,6 @@ Require the project be compiled successfully at least once."
         (executable (cadr tgt)))
 
     (setq base-dir (cppcm--guess-dir-containing-cmakelists-dot-txt src-dir))
-    (setq hash-key (cppcm--exe-hashkey base-dir))
     (setq cm (cppcm--cmakelists-dot-txt base-dir))
     (setq exe-dir (concat
                    (directory-file-name build-dir)
@@ -534,10 +532,10 @@ Require the project be compiled successfully at least once."
     (if cppcm-debug (message "exe-full-path=%s" exe-full-path))
 
     (when exe-full-path
-      (puthash hash-key exe-full-path cppcm-hash))
+      (puthash (cppcm--exe-hashkey base-dir) exe-full-path cppcm-hash))
 
     ;; create makefile
-    (cppcm-create-makefile-for-flymake (cppcm-extract-info-from-flags-dot-make flag-make hash-key)
+    (cppcm-create-makefile-for-flymake (cppcm-extract-info-from-flags-dot-make flag-make (cppcm--flags-hashkey base-dir))
                                        flag-make
                                        src-dir)
     ))
