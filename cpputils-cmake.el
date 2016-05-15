@@ -493,7 +493,7 @@ If C project return C, or else return CXX."
                       is-c
                       "_FLAGS} ${"
                       is-c
-                      "_DEFINES} {"
+                      "_DEFINES} ${"
                       is-c
                       "_INCLUDES} "
                       (mapconcat 'identity cppcm-extra-preprocss-flags-from-user " ")
