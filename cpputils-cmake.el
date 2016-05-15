@@ -650,7 +650,8 @@ Require the project be compiled successfully at least once."
         (setq cppcm-include-dirs (delq nil
                                        (mapcar (lambda (str)
                                                  (when str
-                                                   (setq str (substring str 0 (- (length str) 1)))
+                                                   ;; clean the trailing double quotes and whitespace
+                                                   (setq str (replace-regexp-in-string "[ \t\"]\+$" "" str))
                                                    ;; well, make sure the include is absolute path containing NO dot character
                                                    (concat "-I\"" (file-truename str) "\"")
                                                    ))
