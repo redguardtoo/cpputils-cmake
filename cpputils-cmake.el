@@ -5,7 +5,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake Flycheck
-;; Version: 0.5.4
+;; Version: 0.5.5
 
 ;; This file is not part of GNU Emacs.
 
@@ -689,7 +689,7 @@ Require the project be compiled successfully at least once."
 ;;;###autoload
 (defun cppcm-version ()
   (interactive)
-  (message "0.5.4"))
+  (message "0.5.5"))
 
 ;;;###autoload
 (defun cppcm-compile (&optional prefix)
