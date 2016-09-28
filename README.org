@@ -1,4 +1,4 @@
-* cpputils-cmake.el (v0.5.5)
+* cpputils-cmake.el (v0.5.6)
 
 [[http://melpa.org/#/cpputils-cmake][file:http://melpa.org/packages/cpputils-cmake-badge.svg]] [[http://stable.melpa.org/#/cpputils-cmake][file:http://stable.melpa.org/packages/cpputils-cmake-badge.svg]]
 
@@ -150,8 +150,8 @@ Here is a sample:
         ;; type is either add_executabe or add_library
         ;; tgt-name is the target to built. The target's file extension is stripped
         (message "cppcm-get-executable-full-path-callback called => %s %s %s" path type tgt-name)
-        (let ((dir (file-name-directory path))
-              (file (file-name-nondirectory path)))
+        (let* ((dir (file-name-directory path))
+               (file (file-name-nondirectory path)))
           (cond
            ((string= type "add_executable")
             (setq path (concat dir "bin/" file)))
