@@ -722,7 +722,8 @@ by customize `cppcm-compile-list'."
     (if cppcm-debug (message "company-c-headers-path-system=%s" company-c-headers-path-system))
 
     ;; irony compile-commands-path
-    (if (fboundp 'irony-cdb-json-add-compile-commands-path)
+    (if (and cppcm-src-dir
+             (fboundp 'irony-cdb-json-add-compile-commands-path))
         (irony-cdb-json-add-compile-commands-path cppcm-src-dir (concat cppcm-build-dir "compile_commands.json")))
 
     ;; set cc-search-directories automatically, so ff-find-other-file will succeed
