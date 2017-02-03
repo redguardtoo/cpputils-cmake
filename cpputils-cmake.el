@@ -325,6 +325,12 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
       ;; rebuild the arguments in one string, append double quote string
       (dolist (tk tks v)
         (cond
+         ;; add language standard support for flycheck, e.g., "std = c++11".
+         ((string= (substring tk 0 3) "std")
+          (setq-local flycheck-clang-language-standard (cppcm-trim-string (substring tk 3) "[\s=]*"))
+          (setq-local flycheck-gcc-language-standard flycheck-clang-language-standard)
+          )
+
          ((and (> (length tk) 1) (string= (substring tk 0 2) "-I"))
           (setq v (concat v " -I\"" (substring tk 2 (length tk)) "\"")))
 
@@ -436,7 +442,7 @@ If C project return C, or else return CXX."
         (message "c-flags=%s" c-flags)
         (message "c-defines=%s" c-defines)
         (message "queried-c-flags=%s" queried-c-flags)
-        (message "queried-c-defines=%s" queried-c-flags))
+        (message "queried-c-defines=%s" queried-c-defines))
 
       ;; just what ever preprocess flag we got
       (setq c-defines (match-string 2 queried-c-defines))
