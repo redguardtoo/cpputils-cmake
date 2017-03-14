@@ -5,7 +5,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake Flycheck
-;; Version: 0.5.6
+;; Version: 0.5.666666666
 
 ;; This file is not part of GNU Emacs.
 
@@ -178,6 +178,18 @@ For example:
       (if (string-match cppcm-cmake-target-regex l)
           (push (list (downcase (match-string 1 l)) (match-string 2 l)) vars)))
     vars))
+(defun cppcm-query-targets-from-json (f)
+  (let* (vars
+         var
+         (lines (cppcm-readlines f)))
+    (dolist (l lines)
+      (if (string-match "^\s*\"directory\":\s*\"\\([^\"]*\\)\"" l)
+          (setq var (match-string 1 l))
+        (if (and (string-match "^\s*\"command\":" l)
+                 (string-match "-o \\([^ ]*?\.dir/\\)" l))
+            (push (list var (file-name-directory (match-string 1 l))) vars)))
+      )
+    vars))
 
 ;; get all the possible targets
 ;; @return matched line, use (match-string 2 line) to get results
@@ -326,7 +338,7 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
       (dolist (tk tks v)
         (cond
          ;; add language standard support for flycheck, e.g., "std = c++11".
-         ((string= (substring tk 0 3) "std")
+         ((and (> (length tk) 2) (string= (substring tk 0 3) "std"))
           (setq-local flycheck-clang-language-standard (cppcm-trim-string (substring tk 3) "[\s=]*"))
           (setq-local flycheck-gcc-language-standard flycheck-clang-language-standard)
           )
@@ -341,7 +353,9 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
           (setq v (concat v " -I\"" (substring tk 8 (length tk)) "\"")))
 
          ((and (> (length tk) 9) (string= (substring tk 0 9) "-isystem "))
-          (setq v (concat v " -I\"" (substring tk 9 (length tk)) "\""))))))
+          (setq v (concat v " -I\"" (substring tk 9 (length tk)) "\"")))
+         )
+        ))
     v))
 
 (defun cppcm--find-physical-lib-file (base-exe-name)
@@ -502,6 +516,20 @@ Require the project be compiled successfully at least once."
     (cppcm-create-makefile-for-flymake (cppcm-extract-info-from-flags-dot-make flag-make (cppcm--flags-hashkey base-dir))
                                        flag-make
                                        src-dir)))
+(defun cppcm-handle-executable (build-dir src-dir tgt)
+  (if cppcm-debug (message "cppcm-handle-executable called => %s %s %s" build-dir src-dir tgt))
+  (let* (flag-make
+         (base-dir (cppcm--guess-dir-containing-cmakelists-dot-txt src-dir))
+         (flag-make (concat
+                     (car tgt)
+                     "/"
+                     (cadr tgt)
+                     "flags.make"))
+         )
+    (if cppcm-debug (message "flag-make=%s" flag-make))
+    (cppcm-create-makefile-for-flymake (cppcm-extract-info-from-flags-dot-make flag-make (cppcm--flags-hashkey base-dir))
+                                       flag-make
+                                       src-dir)))
 
 (defun cppcm-scan-info-from-cmake(root-src-dir src-dir build-dir)
   (if cppcm-debug (message "cppcm-scan-info-from-cmake called => %s %s %s" root-src-dir src-dir build-dir))
@@ -538,6 +566,17 @@ Require the project be compiled successfully at least once."
                  (not (equal f ".svn"))
                  (not (equal f ".hg")))
         (cppcm-scan-info-from-cmake root-src-dir subdir build-dir)))))
+
+(defun cppcm-scan-info-from-json (src-dir build-dir)
+  (if cppcm-debug (message "cppcm-scan-info-from-json called => %s %s" src-dir build-dir))
+  (let ((jf (concat build-dir "compile_commands.json")))
+    (if cppcm-debug (message "compile_commands.json=%s" jf))
+    (when (file-exists-p jf)
+      (setq possible-targets (cppcm-query-targets-from-json jf))
+      (if cppcm-debug (message "possible-targets=%s" possible-targets))
+      (dolist (tgt possible-targets)
+        (cppcm-handle-executable build-dir src-dir tgt)
+        ))))
 
 (defun cppcm--guess-dir-containing-cmakelists-dot-txt (&optional src-dir)
   (if cppcm-debug (message "cppcm--guess-dir-containing-cmakelists-dot-txt called => %s" src-dir))
@@ -633,7 +672,7 @@ Require the project be compiled successfully at least once."
 ;;;###autoload
 (defun cppcm-version ()
   (interactive)
-  (message "0.5.6"))
+  (message "0.5.666666666"))
 
 ;;;###autoload
 (defun cppcm-compile (&optional prefix)
@@ -674,7 +713,10 @@ by customize `cppcm-compile-list'."
         (condition-case nil
             (progn
               ;; the order is fixed
-              (cppcm-scan-info-from-cmake (nth 3 dirs) (nth 3 dirs) (nth 2 dirs))
+              (if cppcm-debug (message "file=%s" (concat (nth 2 dirs) "compile_command.json")))
+              (if (file-exists-p (concat (nth 2 dirs) "compile_command.json"))
+                  (cppcm-scan-info-from-json (nth 3 dirs) (nth 2 dirs))
+                (cppcm-scan-info-from-cmake (nth 3 dirs) (nth 3 dirs) (nth 2 dirs)))
               (cppcm-set-c-flags-current-buffer))
           (error
            (if cppcm-debug (message "Failed to get some information from scanning. Continue anyway.")))))
