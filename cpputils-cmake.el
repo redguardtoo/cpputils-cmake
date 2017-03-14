@@ -5,7 +5,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake Flycheck
-;; Version: 0.5.666666666
+;; Version: 0.5.6
 
 ;; This file is not part of GNU Emacs.
 
@@ -179,15 +179,19 @@ For example:
           (push (list (downcase (match-string 1 l)) (match-string 2 l)) vars)))
     vars))
 (defun cppcm-query-targets-from-json (f)
+  (if cppcm-debug (message "cppcm-query-targets-from-json => %s" f))
   (let* (vars
-         var
-         (lines (cppcm-readlines f)))
+         (json-array-type 'list)
+         (lines (json-read-file f)))
     (dolist (l lines)
-      (if (string-match "^\s*\"directory\":\s*\"\\([^\"]*\\)\"" l)
-          (setq var (match-string 1 l))
-        (if (and (string-match "^\s*\"command\":" l)
-                 (string-match "-o \\([^ ]*?\.dir/\\)" l))
-            (push (list var (file-name-directory (match-string 1 l))) vars)))
+      ;; (if (string-match "^\s*\"directory\":\s*\"\\([^\"]*\\)\"" l)
+      ;;     (setq var (match-string 1 l))
+      ;;   (if (and (string-match "^\s*\"command\":" l)
+      ;;            (string-match "-o \\([^ ]*?\.dir/\\)" l))
+      ;;       (push (list var (file-name-directory (match-string 1 l))) vars)))
+      (let* ((comm (alist-get 'command l)))
+        (if (string-match "-o \\([^ ]*?\.dir/\\)" comm)
+            (push (list (alist-get 'directory l) (match-string 1 comm)) vars)))
       )
     vars))
 
@@ -672,7 +676,7 @@ Require the project be compiled successfully at least once."
 ;;;###autoload
 (defun cppcm-version ()
   (interactive)
-  (message "0.5.666666666"))
+  (message "0.5.6"))
 
 ;;;###autoload
 (defun cppcm-compile (&optional prefix)
@@ -714,7 +718,7 @@ by customize `cppcm-compile-list'."
             (progn
               ;; the order is fixed
               (if cppcm-debug (message "file=%s" (concat (nth 2 dirs) "compile_command.json")))
-              (if (file-exists-p (concat (nth 2 dirs) "compile_command.json"))
+              (if (file-exists-p (concat (nth 2 dirs) "compile_commands.json"))
                   (cppcm-scan-info-from-json (nth 3 dirs) (nth 2 dirs))
                 (cppcm-scan-info-from-cmake (nth 3 dirs) (nth 3 dirs) (nth 2 dirs)))
               (cppcm-set-c-flags-current-buffer))
