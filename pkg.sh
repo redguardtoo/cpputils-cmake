@@ -1,13 +1,16 @@
 #!/bin/bash
-#pkg=cpputils-cmake-`date +%Y%m%d.%H%M`
-pkg=cpputils-cmake-0.5.6
+name=cpputils-cmake
+version=0.5.7
+pkg=$name-$version
 mkdir $pkg
-cp README.org $pkg
 cp *.el $pkg
+cat << EOF > $pkg/$name-pkg.el
+(define-package "$name" "$version"
+                "whatever")
+EOF
 if [[ `uname -s` == *Darwin* ]]; then
    COPYFILE_DISABLE="" tar cvf $pkg.tar $pkg/
 else
    tar cvf $pkg.tar $pkg/
 fi
 rm -rf $pkg/
-

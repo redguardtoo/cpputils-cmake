@@ -1,11 +1,11 @@
 ;;; cpputils-cmake.el --- Easy realtime C++ syntax check and IntelliSense with CMake.
 
-;; Copyright (C) 2014-2016 Chen Bin
+;; Copyright (C) 2014-2017 Chen Bin
 
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake Flycheck
-;; Version: 0.5.6
+;; Version: 0.5.7
 
 ;; This file is not part of GNU Emacs.
 
@@ -30,6 +30,8 @@
 ;; Check https://github.com/redguardtoo/cpputils-cmake/ for more tips
 
 ;;; Code:
+
+(require 'json)
 
 (defcustom cppcm-proj-max-dir-level 16 "maximum level of the project directory tree"
   :type 'number
@@ -178,21 +180,20 @@ For example:
       (if (string-match cppcm-cmake-target-regex l)
           (push (list (downcase (match-string 1 l)) (match-string 2 l)) vars)))
     vars))
+
+(defun cppcm--alist-get (key alist)
+  (let ((x (assq key alist)))
+    (if x (cdr x))))
+
 (defun cppcm-query-targets-from-json (f)
   (if cppcm-debug (message "cppcm-query-targets-from-json => %s" f))
   (let* (vars
          (json-array-type 'list)
          (lines (json-read-file f)))
     (dolist (l lines)
-      ;; (if (string-match "^\s*\"directory\":\s*\"\\([^\"]*\\)\"" l)
-      ;;     (setq var (match-string 1 l))
-      ;;   (if (and (string-match "^\s*\"command\":" l)
-      ;;            (string-match "-o \\([^ ]*?\.dir/\\)" l))
-      ;;       (push (list var (file-name-directory (match-string 1 l))) vars)))
-      (let* ((comm (alist-get 'command l)))
+      (let* ((comm (cppcm--alist-get 'command l)))
         (if (string-match "-o \\([^ ]*?\.dir/\\)" comm)
-            (push (list (alist-get 'directory l) (match-string 1 comm)) vars)))
-      )
+            (push (list (cppcm--alist-get 'directory l) (match-string 1 comm)) vars))))
     vars))
 
 ;; get all the possible targets
@@ -520,6 +521,7 @@ Require the project be compiled successfully at least once."
     (cppcm-create-makefile-for-flymake (cppcm-extract-info-from-flags-dot-make flag-make (cppcm--flags-hashkey base-dir))
                                        flag-make
                                        src-dir)))
+
 (defun cppcm-handle-executable (build-dir src-dir tgt)
   (if cppcm-debug (message "cppcm-handle-executable called => %s %s %s" build-dir src-dir tgt))
   (let* (flag-make
@@ -528,8 +530,7 @@ Require the project be compiled successfully at least once."
                      (car tgt)
                      "/"
                      (cadr tgt)
-                     "flags.make"))
-         )
+                     "flags.make")))
     (if cppcm-debug (message "flag-make=%s" flag-make))
     (cppcm-create-makefile-for-flymake (cppcm-extract-info-from-flags-dot-make flag-make (cppcm--flags-hashkey base-dir))
                                        flag-make
@@ -573,14 +574,14 @@ Require the project be compiled successfully at least once."
 
 (defun cppcm-scan-info-from-json (src-dir build-dir)
   (if cppcm-debug (message "cppcm-scan-info-from-json called => %s %s" src-dir build-dir))
-  (let ((jf (concat build-dir "compile_commands.json")))
+  (let ((jf (concat build-dir "compile_commands.json"))
+        possible-targets)
     (if cppcm-debug (message "compile_commands.json=%s" jf))
     (when (file-exists-p jf)
       (setq possible-targets (cppcm-query-targets-from-json jf))
       (if cppcm-debug (message "possible-targets=%s" possible-targets))
       (dolist (tgt possible-targets)
-        (cppcm-handle-executable build-dir src-dir tgt)
-        ))))
+        (cppcm-handle-executable build-dir src-dir tgt)))))
 
 (defun cppcm--guess-dir-containing-cmakelists-dot-txt (&optional src-dir)
   (if cppcm-debug (message "cppcm--guess-dir-containing-cmakelists-dot-txt called => %s" src-dir))
@@ -676,7 +677,7 @@ Require the project be compiled successfully at least once."
 ;;;###autoload
 (defun cppcm-version ()
   (interactive)
-  (message "0.5.6"))
+  (message "0.5.7"))
 
 ;;;###autoload
 (defun cppcm-compile (&optional prefix)
