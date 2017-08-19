@@ -343,8 +343,8 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
       (dolist (tk tks v)
         (cond
          ;; add language standard support for flycheck, e.g., "std = c++11".
-         ((and (> (length tk) 2) (string= (substring tk 0 3) "std"))
-          (setq-local flycheck-clang-language-standard (cppcm-trim-string (substring tk 3) "[\s=]*"))
+         ((and (> (length tk) 2) (string-match-p "std\s*=" tk))
+          (setq-local flycheck-clang-language-standard (cppcm-trim-string tk "[-std\s=]*"))
           (setq-local flycheck-gcc-language-standard flycheck-clang-language-standard)
           )
 
