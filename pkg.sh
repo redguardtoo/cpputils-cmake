@@ -1,6 +1,6 @@
 #!/bin/bash
 name=cpputils-cmake
-version=0.5.7
+version=0.5.8
 pkg=$name-$version
 mkdir $pkg
 cp *.el $pkg

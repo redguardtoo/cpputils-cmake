@@ -1,4 +1,4 @@
-* cpputils-cmake.el v0.5.7
+* cpputils-cmake.el v0.5.8
 
 [[http://melpa.org/#/cpputils-cmake][file:http://melpa.org/packages/cpputils-cmake-badge.svg]] [[http://stable.melpa.org/#/cpputils-cmake][file:http://stable.melpa.org/packages/cpputils-cmake-badge.svg]]
 

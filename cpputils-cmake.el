@@ -5,7 +5,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/cpputils-cmake
 ;; Keywords: CMake IntelliSense Flymake Flycheck
-;; Version: 0.5.7
+;; Version: 0.5.8
 
 ;; This file is not part of GNU Emacs.
 
@@ -13,18 +13,14 @@
 
 ;; Commentary:
 
-;; Ths package provides `cppcm-reload-all', you can call
-;; it IF AND ONLY IF you are editing C/C++ file.
-;;
-;; Example setup:
+;; Add below code into your ".emacs",
 ;;  (add-hook 'c-mode-common-hook (lambda ()
 ;;              (if (derived-mode-p 'c-mode 'c++-mode)
 ;;                  (cppcm-reload-all))))
 ;;
-;; Above setup is enough for 99% use cases.
-;; Please follow below steps before using Emacs:
+;; Then follow below steps before using Emacs:
 ;;   Step 1, run "cmake" to create out build directory
-;;   Step 2, run "make" to compile SUCCESSFULLY in tbuild directory
+;;   Step 2, run "make" to compile SUCCESSFULLY in build directory
 ;;
 ;; BTW, you can "M-x cppcm-reload-all" anytime to re-scan the source,
 ;; Check https://github.com/redguardtoo/cpputils-cmake/ for more tips
@@ -47,13 +43,13 @@
   :group 'cpputils-cmake)
 
 (defvar cppcm-get-executable-full-path-callback nil
-  "User defined function to get correct path of executabe.
+  "User defined function to get correct path of executable.
 Sample definition:
 (setq cppcm-get-executable-full-path-callback
       (lambda (path type tgt-name)
         (message \"cppcm-get-executable-full-path-callback called => %s %s %s\" path type tgt-name)
         ;; path is the supposed-to-be target's full path
-        ;; type is either add_executabe or add_library
+        ;; type is either add_executable or add_library
         ;; tgt-name is the target to built. The target's file extension is stripped
         (let* ((dir (file-name-directory path))
               (file (file-name-nondirectory path)))
@@ -64,6 +60,9 @@ Sample definition:
            (t (setq path (concat dir \"lib/\" file)))
             ))
           path))")
+
+(defvar cppcm-insert-kill-ring-function nil
+  "It's executed when executable path is inserted into `kill-ring'")
 
 (defvar cppcm-extra-preprocss-flags-from-user nil
   "Value example: (\"-I/usr/src/include\" \"-I./inc\" \"-DNDEBUG\").")
@@ -126,13 +125,8 @@ For example:
 
 (defun cppcm-share-str (msg)
   (kill-new msg)
-  (with-temp-buffer
-    (insert msg)
-    (shell-command-on-region (point-min) (point-max)
-                             (cond
-                              ((eq system-type 'cygwin) "putclip")
-                              ((eq system-type 'darwin) "pbcopy")
-                              (t "xsel -ib")))))
+  (when cppcm-insert-kill-ring-function
+    (funcall cppcm-insert-kill-ring-function msg)))
 
 (defun cppcm-readlines (FILE)
   "Return a list of lines of a file at FILE."
@@ -613,7 +607,7 @@ Require the project be compiled successfully at least once."
     (cond
      (exe-path
       (cppcm-share-str exe-path)
-      (message "%s => clipboard" exe-path))
+      (message "%s => kill-ring" exe-path))
      (t
       (message "Executable missing! Please run cmake and make in shell manullay at first.")))
     exe-path))
@@ -677,7 +671,7 @@ Require the project be compiled successfully at least once."
 ;;;###autoload
 (defun cppcm-version ()
   (interactive)
-  (message "0.5.7"))
+  (message "0.5.8"))
 
 ;;;###autoload
 (defun cppcm-compile (&optional prefix)
